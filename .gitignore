@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+
+# Production build
+build/
+dist/
+
+# Environment variables — لا ترفعها أبداً!
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+prisma/migrations/
+
+# Local storage (لا نحتاجها في Git)
+storage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Scratch files
+scratch/

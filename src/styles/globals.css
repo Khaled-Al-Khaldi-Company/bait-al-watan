@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Inter:wght@100..900&display=swap');
+
+:root {
+  --primary: 160 84% 15%; /* Deep Emerald */
+  --primary-foreground: 160 84% 95%;
+  --secondary: 38 92% 50%; /* Gold */
+  --secondary-foreground: 38 92% 10%;
+  --background: 210 20% 98%;
+  --foreground: 210 20% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 20% 10%;
+  --border: 210 20% 90%;
+  --input: 210 20% 90%;
+  --ring: 160 84% 15%;
+  --radius: 0.75rem;
+  
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 68px;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+[data-theme='dark'] {
+  --background: 210 20% 5%;
+  --foreground: 210 20% 98%;
+  --card: 210 20% 8%;
+  --card-foreground: 210 20% 98%;
+  --border: 210 20% 15%;
+  --input: 210 20% 15%;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', 'Cairo', sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.5em;
+}
+
+/* Premium Layout */
+.dashboard-container {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  min-height: 100vh;
+  transition: grid-template-columns 0.4s ease;
+}
+
+.main-content-layout {
+  margin-right: var(--sidebar-width);
+  transition: margin-right 0.35s cubic-bezier(0.4,0,0.2,1);
+  min-height: 100vh;
+}
+
+/* Sidebar nav hover effect */
+aside a:hover {
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.9) !important;
+  transform: translateX(-2px);
+}
+
+aside button:hover {
+  background: rgba(239,68,68,0.2) !important;
+}
+
+/* Components */
+.glass-card {
+  background: hsla(var(--card) / 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.3);
+}
+
+.btn-secondary {
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+/* RTL Support */
+[dir='rtl'] {
+  font-family: 'Cairo', 'Inter', sans-serif;
+}
+
+[dir='rtl'] .sidebar {
+  border-right: none;
+  border-left: 1px solid hsl(var(--border));
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.project-item-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* --- Professional Print Styles --- */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 15mm;
+  }
+
+  /* Hide UI elements during print */
+  nav, .sidebar, button, .no-print, header button, .back-link, .print-btn {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 10pt;
+    color: black;
+  }
+
+  .card, .container, main, .glass-card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: white !important;
+  }
+
+  /* Professional Header for PDF */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    border: 1px solid #e2e8f0 !important;
+    padding: 8pt !important;
+    font-size: 9pt !important;
+    text-align: right !important;
+  }
+
+  th {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .text-primary { color: #1e40af !important; }
+  .text-success { color: #15803d !important; }
+  .text-danger { color: #b91c1c !important; }
+  
+  /* Force colors in print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Custom Scrollbar for Sidebar */
+.sidebar-nav-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-nav-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-nav-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+.sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Hide print header in normal browser view */
+.print-header {
+  display: none;
+}
+

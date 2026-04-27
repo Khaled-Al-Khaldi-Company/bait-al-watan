@@ -1,0 +1,22 @@
+{
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, Admin",
+    "financialSummary": "Financial Summary",
+    "totalPaid": "Total Paid",
+    "remaining": "Remaining",
+    "stats": "Statistics",
+    "activeProjects": "Active Projects",
+    "docsUploaded": "Documents Uploaded",
+    "recentProjects": "Recent Projects",
+    "addProject": "Add Project"
+  },
+  "Navigation": {
+    "dashboard": "Dashboard",
+    "documents": "Documents",
+    "finances": "Finances",
+    "chat": "Chat",
+    "members": "Members",
+    "settings": "Settings"
+  }
+}

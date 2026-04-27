@@ -1,0 +1,22 @@
+{
+  "Dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "أهلاً بك مجدداً، مدير النظام",
+    "financialSummary": "الملخص المالي",
+    "totalPaid": "إجمالي المدفوع",
+    "remaining": "المتبقي",
+    "stats": "الإحصائيات",
+    "activeProjects": "المشاريع النشطة",
+    "docsUploaded": "المستندات المرفوعة",
+    "recentProjects": "أحدث المشاريع",
+    "addProject": "إضافة مشروع"
+  },
+  "Navigation": {
+    "dashboard": "لوحة التحكم",
+    "documents": "المستندات",
+    "finances": "المالية",
+    "chat": "المحادثة",
+    "members": "الأعضاء",
+    "settings": "الإعدادات"
+  }
+}
