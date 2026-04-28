@@ -7,7 +7,7 @@ import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard, Building2, Users, FileText,
   Wallet, Landmark, BarChart3, Settings, LogOut,
-  MessageSquare, ChevronRight, ChevronLeft, User
+  MessageSquare, ChevronRight, ChevronLeft, User, Cloud
 } from 'lucide-react';
 
 const EXPANDED_W = 240;
@@ -35,9 +35,22 @@ export default function Sidebar() {
     { href: '/dashboard/reports',   icon: <BarChart3 size={20} />,       label: 'التقارير' },
     { href: '/dashboard/documents', icon: <FileText size={20} />,        label: 'المستندات' },
     { href: '/dashboard/messages',  icon: <MessageSquare size={20} />,   label: 'المحادثات' },
+    { href: '#deploy',              icon: <Cloud size={20} />,           label: 'نشر التحديثات' },
   ];
 
   const w = isCollapsed ? COLLAPSED_W : EXPANDED_W;
+
+  const handleDeploy = async () => {
+    if (confirm('هل أنت متأكد من رغبتك في نشر كافة التعديلات الحالية إلى السحابة؟')) {
+      try {
+        const res = await fetch('/api/admin/deploy', { method: 'POST' });
+        const data = await res.json();
+        alert(data.message || 'تم بدء عملية النشر بنجاح!');
+      } catch (err) {
+        alert('حدث خطأ أثناء محاولة النشر. تأكد من إعدادات الـ Webhook.');
+      }
+    }
+  };
 
   return (
     <aside
@@ -143,62 +156,73 @@ export default function Sidebar() {
             pathname === item.href ||
             (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (
-            <Link
+            <div
               key={item.href}
-              href={item.href}
-              title={isCollapsed ? item.label : ''}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: isCollapsed ? 'center' : 'flex-start',
-                gap: '0.65rem',
-                padding: isCollapsed ? '0.7rem' : '0.65rem 0.9rem',
-                borderRadius: '10px',
-                textDecoration: 'none',
-                color: isActive ? '#ffffff' : 'rgba(255,255,255,0.55)',
-                background: isActive
-                  ? 'rgba(255,255,255,0.12)'
-                  : 'transparent',
-                border: isActive
-                  ? '1px solid rgba(255,255,255,0.1)'
-                  : '1px solid transparent',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.88rem',
-                transition: 'all 0.2s',
-                position: 'relative',
-                whiteSpace: 'nowrap',
+              onClick={(e) => {
+                if (item.href === '#deploy') {
+                  e.preventDefault();
+                  handleDeploy();
+                }
               }}
+              style={{ display: 'contents' }}
             >
-              {/* Active indicator */}
-              {isActive && !isCollapsed && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: '22%',
-                    bottom: '22%',
-                    width: '3px',
-                    background: '#f59e0b',
-                    borderRadius: '0 3px 3px 0',
-                  }}
-                />
-              )}
-              <span
+              <Link
+                href={item.href === '#deploy' ? '#' : item.href}
+                title={isCollapsed ? item.label : ''}
                 style={{
-                  color: isActive ? '#fbbf24' : 'rgba(255,255,255,0.5)',
                   display: 'flex',
                   alignItems: 'center',
-                  minWidth: '20px',
+                  justifyContent: isCollapsed ? 'center' : 'flex-start',
+                  gap: '0.65rem',
+                  padding: isCollapsed ? '0.7rem' : '0.65rem 0.9rem',
+                  borderRadius: '10px',
+                  textDecoration: 'none',
+                  color: isActive ? '#ffffff' : 'rgba(255,255,255,0.55)',
+                  background: isActive
+                    ? 'rgba(255,255,255,0.12)'
+                    : item.href === '#deploy' ? 'rgba(245, 158, 11, 0.1)' : 'transparent',
+                  border: isActive
+                    ? '1px solid rgba(255,255,255,0.1)'
+                    : '1px solid transparent',
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: '0.88rem',
+                  transition: 'all 0.2s',
+                  position: 'relative',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer'
                 }}
               >
-                {item.icon}
-              </span>
-              {!isCollapsed && (
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {item.label}
+                {/* Active indicator */}
+                {isActive && !isCollapsed && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '22%',
+                      bottom: '22%',
+                      width: '3px',
+                      background: '#f59e0b',
+                      borderRadius: '0 3px 3px 0',
+                    }}
+                  />
+                )}
+                <span
+                  style={{
+                    color: isActive ? '#fbbf24' : item.href === '#deploy' ? '#fbbf24' : 'rgba(255,255,255,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    minWidth: '20px',
+                  }}
+                >
+                  {item.icon}
                 </span>
-              )}
-            </Link>
+                {!isCollapsed && (
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {item.label}
+                  </span>
+                )}
+              </Link>
+            </div>
           );
         })}
       </div>

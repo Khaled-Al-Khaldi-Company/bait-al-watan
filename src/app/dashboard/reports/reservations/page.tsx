@@ -94,10 +94,14 @@ export default function ReservationsReport() {
             <tbody>
               {data.map((row, idx) => (
                 <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#fafafa', fontSize: '0.85rem' }}>
-                  <td style={{ padding: '1rem' }}>
-                     <div style={{ fontWeight: 900, color: '#0f172a' }}>{row.userName}</div>
-                     <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{row.projectName} <span className="badge-print" style={{ color: '#059669', fontWeight: 800 }}>({row.percentage.toFixed(1)}%)</span></div>
-                  </td>
+                    <td style={{ padding: '1rem' }}>
+                       <div style={{ fontWeight: 900, color: '#0f172a' }}>{row.userName}</div>
+                       <Link href={`/dashboard/projects/${row.projectId}`} style={{ textDecoration: 'none' }}>
+                         <div style={{ fontSize: '0.75rem', color: '#1e40af', cursor: 'pointer' }}>
+                           {row.projectName} <span className="badge-print" style={{ color: '#059669', fontWeight: 800 }}>({row.percentage.toFixed(1)}%)</span>
+                         </div>
+                       </Link>
+                    </td>
                   
                   <td style={{ padding: '1rem', textAlign: 'center', fontWeight: 700, color: '#991b1b' }}>${row.landShare.toLocaleString()}</td>
                   <td style={{ padding: '1rem', textAlign: 'center', fontWeight: 700, color: '#1e40af' }}>${row.expenseShare.toLocaleString()}</td>

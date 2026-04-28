@@ -97,6 +97,7 @@ export async function GET() {
         id: p.id,
         userName: p.user?.name || 'مستخدم غير معروف',
         projectName: project?.name || 'مشروع غير موجود',
+        projectId: project?.id,
         percentage: pct * 100,
         landShare: partnerLandShareUSD,
         landShareEGP: partnerLandShareEGP,
