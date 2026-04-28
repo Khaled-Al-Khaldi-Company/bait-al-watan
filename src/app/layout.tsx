@@ -1,3 +1,4 @@
+// Build trigger: 2026-04-28-v2
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 
