@@ -1,4 +1,5 @@
 'use client';
+// Build trigger: 2026-04-28
 
 import React, { useState, useEffect } from 'react';
 import { Card, Button } from '@/components/ui';
