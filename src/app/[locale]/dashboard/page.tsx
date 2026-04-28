@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button } from '@/components/ui';
 import { LayoutDashboard, FileText, Wallet, Settings, Users, MessageSquare, Plus, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Sidebar from '@/components/Sidebar';
 
 export default function Dashboard() {
   const t = useTranslations('Dashboard');
@@ -70,20 +71,8 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="dashboard-container">
-      <aside className="sidebar">
-        <div className="logo">
-          <h2 style={{ color: 'hsl(var(--secondary))' }}>Bait Al Watan</h2>
-        </div>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <NavItem icon={<LayoutDashboard size={20} />} label={nt('dashboard')} active />
-          <NavItem icon={<FileText size={20} />} label={nt('documents')} />
-          <NavItem icon={<Wallet size={20} />} label={nt('finances')} />
-          <NavItem icon={<MessageSquare size={20} />} label={nt('chat')} />
-          <NavItem icon={<Users size={20} />} label={nt('members')} />
-          <NavItem icon={<Settings size={20} />} label={nt('settings')} />
-        </nav>
-      </aside>
+    <div className="dashboard-container" style={{ display: 'flex', minHeight: '100vh', direction: 'rtl' }}>
+      <Sidebar />
 
       <main className="main-content">
         <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
