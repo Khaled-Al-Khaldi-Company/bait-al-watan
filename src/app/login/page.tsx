@@ -14,19 +14,27 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const res = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    });
+    console.log('Attempting login for:', email);
+    try {
+      const res = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
 
-    if (res?.ok) {
-      router.push('/dashboard');
-    } else {
-      console.error('Login error:', res?.error);
-      alert(res?.error === 'CredentialsSignin' ? 'بيانات الدخول غير صحيحة' : 'حدث خطأ في الاتصال بالخادم: ' + (res?.error || 'Unknown error'));
+      console.log('Sign-in result:', res);
+
+      if (res?.ok) {
+        window.location.href = '/dashboard';
+      } else {
+        alert(res?.error === 'CredentialsSignin' ? 'بيانات الدخول غير صحيحة' : 'فشل الدخول: ' + (res?.error || 'خطأ غير معروف'));
+      }
+    } catch (err: any) {
+      console.error('Fatal login error:', err);
+      alert('خطأ فني في نظام الدخول: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
