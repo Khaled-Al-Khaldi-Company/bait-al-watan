@@ -21,7 +21,7 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
     const date = formData.get('date') as string;
     const purpose = formData.get('purpose') as string;
     const type = formData.get('type') as string;
-    const targetUserId = formData.get('userId') as string;
+    const targetUserId = formData.get('userId') as string | null;
     const egpRate = formData.get('egpRate') as string;
     const file = formData.get('attachment') as File;
 
@@ -68,7 +68,7 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
         const uId = session ? (session.user as any).id : null;
         if (!uId) {
           const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
-          finalUserId = admin?.id;
+          finalUserId = admin?.id || '';
         } else {
           finalUserId = uId;
         }
