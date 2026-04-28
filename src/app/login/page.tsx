@@ -23,7 +23,8 @@ export default function LoginPage() {
     if (res?.ok) {
       router.push('/dashboard');
     } else {
-      alert('Invalid credentials');
+      console.error('Login error:', res?.error);
+      alert(res?.error === 'CredentialsSignin' ? 'بيانات الدخول غير صحيحة' : 'حدث خطأ في الاتصال بالخادم: ' + (res?.error || 'Unknown error'));
     }
     setLoading(false);
   };

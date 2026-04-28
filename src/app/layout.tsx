@@ -1,13 +1,12 @@
-// Build trigger: 2026-04-28-v2
+// Build trigger: 2026-04-28-v3
 import type { Metadata } from "next";
 import "@/styles/globals.css";
+import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: "بوابة بيت الوطن | نظام التعاون العقاري",
   description: "منصة آمنة لإدارة الاستثمارات العقارية",
 };
-
-import { Providers } from "@/components/Providers";
 
 export default function RootLayout({
   children,
