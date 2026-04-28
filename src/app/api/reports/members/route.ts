@@ -42,7 +42,8 @@ export async function GET(req: NextRequest) {
       let totalPaidEGP = 0;
 
       user.participations.forEach(part => {
-        const required = (part.project.totalValue * part.percentage) / 100;
+        const percentage = part.percentage || 0;
+        const required = (part.project.totalValue * percentage) / 100;
         
         const memberTransactions = part.project.transactions.filter(t => 
           t.userId === user.id && 
