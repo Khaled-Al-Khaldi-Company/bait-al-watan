@@ -107,6 +107,7 @@ export default function ProjectDetailsPage() {
             <Button style={{ borderRadius: '14px', gap: '0.5rem', fontWeight: 700, height: '3.2rem', padding: '0 1.5rem', background: '#064e3b' }}>
               <Edit3 size={18} /> تعديل البيانات
             </Button>
+            <div style={{ fontSize: '10px', opacity: 0.1, position: 'absolute', top: 5, left: 5 }}>v2.0.5-final</div>
           </div>
         </div>
 

@@ -373,6 +373,8 @@ export default function Sidebar() {
             <LogOut size={16} />
           </button>
         )}
+        {/* Version Indicator */}
+        <div style={{ fontSize: '10px', opacity: 0.2, textAlign: 'center', marginTop: '10px' }}>v2.0.5-final</div>
       </div>
     </aside>
   );
