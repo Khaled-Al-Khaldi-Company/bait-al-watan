@@ -98,8 +98,22 @@ export default function LoginPage() {
 
         <div style={{ marginTop: '2.5rem', textAlign: 'center', fontSize: '0.85rem', opacity: 0.4, fontWeight: 700 }}>
           نظام التعاون العقاري | جميع الحقوق محفوظة 2025
+          <div id="diag-status" style={{ marginTop: '10px', fontSize: '10px', color: '#ef4444' }}>جاري فحص الاتصال...</div>
         </div>
       </Card>
+      <script dangerouslySetInnerHTML={{ __html: `
+        fetch('/api/debug-db').then(r => r.json()).then(data => {
+          const el = document.getElementById('diag-status');
+          if (data.status === 'success') {
+            el.style.color = '#10b981';
+            el.innerText = 'متصل بنجاح (مستخدمين: ' + data.userCount + ')';
+          } else {
+            el.innerText = 'خطأ في الاتصال: ' + data.message;
+          }
+        }).catch(err => {
+          document.getElementById('diag-status').innerText = 'فشل الطلب البرمجي';
+        });
+      `}} />
     </div>
   );
 }
