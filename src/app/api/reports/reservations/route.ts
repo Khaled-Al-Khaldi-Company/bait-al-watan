@@ -46,7 +46,7 @@ export async function GET() {
         t.type === 'MEMBER_CONTRIBUTION' && t.amount > 0 && 
         !t.purpose?.includes('[') && 
         !t.purpose?.includes('مناقلة')
-      ).reduce((sum: number, t: any) => sum + t.amount, 0);
+      ).reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
 
       const userTransactions = transactions.filter((t: any) => t.userId === p.userId);
       const userPaidUSD = userTransactions.filter((t: any) => t.type === 'MEMBER_CONTRIBUTION' && t.amount > 0).reduce((s, t) => s + t.amount, 0);

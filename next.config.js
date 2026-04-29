@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// Force rebuild trigger: 2026-04-29-vFinal
+// Production Build Trigger: v2.0.8-ULTIMATE-STABLE
 const nextConfig = {
   images: {
     remotePatterns: [

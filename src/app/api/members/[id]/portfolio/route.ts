@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from "@/lib/prisma";
 
@@ -67,7 +68,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     const totalProjectExpenses = project.transactions
       .filter(t => t.type === 'OTHER_EXPENSE' && !t.purpose?.includes('مرحل') && !t.purpose?.includes('مناقلة'))
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
 
     const partnerLandShare = totalProjectOfficial * partnerPct;
     const partnerExpenseShare = totalProjectExpenses * partnerPct;
