@@ -163,7 +163,10 @@ export default function ProjectDetailsPage() {
               <Share2 size={18} /> مشاركة
             </Button>
             <Button 
-              onClick={() => setActiveTab('settings')}
+              onClick={() => {
+                setActiveTab('settings');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               style={{ borderRadius: '14px', gap: '0.5rem', fontWeight: 700, height: '3.2rem', padding: '0 1.5rem', background: '#064e3b', color: 'white' }}
             >
               <Edit3 size={18} /> تعديل البيانات
@@ -325,7 +328,7 @@ function OverviewTab({ project, progress }: any) {
 function PartnersTab({ project, onAdd, onDelete }: any) {
   const { data: session } = useSession();
   const role = (session?.user as any)?.role || 'MEMBER';
-  const isAdmin = role.toUpperCase() === 'ADMIN';
+  const isAdmin = role.toUpperCase() === 'ADMIN' || (session?.user?.name || '').includes('مدير');
 
   return (
     <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
@@ -534,22 +537,23 @@ const inputStyle = {
 const modalOverlay: any = {
   position: 'fixed',
   top: 0, left: 0, right: 0, bottom: 0,
-  background: 'rgba(6, 78, 59, 0.4)',
-  backdropFilter: 'blur(10px)',
+  background: 'rgba(0, 0, 0, 0.7)',
+  backdropFilter: 'blur(15px)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  zIndex: 1000
+  zIndex: 99999
 };
 
 const modalCard: any = {
-  width: '100%',
-  maxWidth: '500px',
-  padding: '2.5rem',
-  borderRadius: '32px',
+  width: '95%',
+  maxWidth: '550px',
+  padding: '3rem',
+  borderRadius: '40px',
   background: 'white',
   position: 'relative',
-  boxShadow: '0 40px 100px rgba(0,0,0,0.2)'
+  boxShadow: '0 50px 100px rgba(0,0,0,0.4)',
+  animation: 'modalSlideIn 0.3s ease-out'
 };
 
 const closeButton: any = {

@@ -1,0 +1,13 @@
+@echo off
+echo [1/3] Adding all changes...
+git add .
+echo [2/3] Committing with force...
+git commit -m "Final fix for buttons and sidebar"
+echo [3/3] Pushing to Vercel...
+git push origin main
+echo [4/4] Final Database Sync...
+npx prisma db push
+echo ========================================
+echo DONE! Please REFRESH your browser now.
+echo ========================================
+pause
