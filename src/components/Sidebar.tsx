@@ -46,7 +46,7 @@ export default function Sidebar() {
       style={{
         width: `${w}px`,
         minWidth: `${w}px`,
-        background: 'linear-gradient(185deg, #042f2e 0%, #064e3b 40%, #022c22 100%)',
+        background: 'linear-gradient(185deg, #0f172a 0%, #1e293b 40%, #020617 100%)',
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
