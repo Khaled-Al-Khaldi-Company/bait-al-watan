@@ -162,7 +162,10 @@ export default function ProjectDetailsPage() {
             <Button variant="outline" style={{ borderRadius: '14px', gap: '0.5rem', fontWeight: 700, height: '3.2rem', padding: '0 1.5rem', background: 'white' }}>
               <Share2 size={18} /> مشاركة
             </Button>
-            <Button style={{ borderRadius: '14px', gap: '0.5rem', fontWeight: 700, height: '3.2rem', padding: '0 1.5rem', background: '#064e3b', color: 'white' }}>
+            <Button 
+              onClick={() => setActiveTab('settings')}
+              style={{ borderRadius: '14px', gap: '0.5rem', fontWeight: 700, height: '3.2rem', padding: '0 1.5rem', background: '#064e3b', color: 'white' }}
+            >
               <Edit3 size={18} /> تعديل البيانات
             </Button>
           </div>
@@ -321,7 +324,8 @@ function OverviewTab({ project, progress }: any) {
 
 function PartnersTab({ project, onAdd, onDelete }: any) {
   const { data: session } = useSession();
-  const isAdmin = (session?.user as any)?.role === 'ADMIN';
+  const role = (session?.user as any)?.role || 'MEMBER';
+  const isAdmin = role.toUpperCase() === 'ADMIN';
 
   return (
     <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>

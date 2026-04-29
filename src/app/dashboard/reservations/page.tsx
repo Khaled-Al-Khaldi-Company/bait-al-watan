@@ -28,7 +28,7 @@ export default function ManageReservations() {
 
   const sarRate = 3.75;
   const role = (session?.user as any)?.role || 'MEMBER';
-  const isAdmin = role === 'ADMIN';
+  const isAdmin = role.toUpperCase() === 'ADMIN';
 
   useEffect(() => {
     fetchData();

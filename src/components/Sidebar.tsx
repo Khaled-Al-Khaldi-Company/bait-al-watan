@@ -30,8 +30,8 @@ export default function Sidebar() {
   const menuItems = [
     { href: '/dashboard',           icon: <LayoutDashboard size={22} />, label: 'لوحة التحكم' },
     { href: '/dashboard/analytics', icon: <BarChart3 size={22} />,       label: 'تحليل السيولة' },
-    { href: '/dashboard/projects',  icon: <Landmark size={22} />,        label: 'سجل الأراضي' },
-    { href: '/dashboard/reservations', icon: <Users size={22} />,        label: 'سجل الحجوزات' },
+    { href: '/dashboard/projects',  icon: <Landmark size={22} />,        label: 'سجل الحجوزات' },
+    { href: '/dashboard/reservations', icon: <Users size={22} />,        label: 'توزيع الحصص' },
     { href: '/dashboard/members',   icon: <Users size={22} />,           label: 'إدارة الأعضاء' },
     { href: '/dashboard/finances',  icon: <Wallet size={22} />,          label: 'الحركة المالية' },
     { href: '/dashboard/reports',   icon: <Zap size={22} />,             label: 'تقارير الأداء' },
