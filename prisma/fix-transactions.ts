@@ -1,2 +1,2 @@
-// This file is disabled to prevent build conflicts.
+// Disabled to prevent build conflicts
 export {};
