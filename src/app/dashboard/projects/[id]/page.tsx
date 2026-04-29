@@ -67,7 +67,15 @@ export default function ProjectDetailsPage() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7f9', direction: 'rtl', fontFamily: 'inherit' }}>
       <Sidebar />
       
-      <main style={{ flex: 1, padding: '2rem 3rem', maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
+      <main style={{ 
+        flex: 1, 
+        padding: '2rem 3rem', 
+        paddingRight: 'calc(var(--sidebar-width) + 2rem)', // Auto-space from sidebar
+        maxWidth: '1600px', 
+        margin: '0 auto', 
+        width: '100%',
+        transition: 'padding-right 0.35s ease'
+      }}>
         
         {/* Professional Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
@@ -107,7 +115,7 @@ export default function ProjectDetailsPage() {
             <Button style={{ borderRadius: '14px', gap: '0.5rem', fontWeight: 700, height: '3.2rem', padding: '0 1.5rem', background: '#064e3b' }}>
               <Edit3 size={18} /> تعديل البيانات
             </Button>
-            <div style={{ fontSize: '10px', opacity: 0.1, position: 'absolute', top: 5, left: 5 }}>v2.0.5-final</div>
+            <div style={{ fontSize: '10px', opacity: 0.1, position: 'absolute', top: 5, left: 5 }}>v2.0.7-final</div>
           </div>
         </div>
 
