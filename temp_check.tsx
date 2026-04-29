@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge } from '@/components/ui';
@@ -23,9 +23,6 @@ export default function ProjectDetailsPage() {
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
-  const [showAddPartner, setShowAddPartner] = useState(false);
-  const [users, setUsers] = useState<any[]>([]);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -35,58 +32,16 @@ export default function ProjectDetailsPage() {
 
   const fetchProject = async () => {
     try {
-      const [projRes, usersRes] = await Promise.all([
-        fetch(`/api/projects/${id}`),
-        fetch('/api/members')
-      ]);
-      
-      if (projRes.ok) {
-        const data = await projRes.json();
+      const res = await fetch(`/api/projects/${id}`);
+      if (res.ok) {
+        const data = await res.json();
         setProject(data);
       }
-      if (usersRes.ok) {
-        const usrs = await usersRes.json();
-        setUsers(usrs);
-      }
     } catch (err) {
-      console.error('Error fetching project data:', err);
+      console.error('Error fetching project:', err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAddPartner = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSubmitting(true);
-    const formData = new FormData(e.currentTarget);
-    const body = {
-      projectId: id,
-      userId: formData.get('userId'),
-      percentage: parseFloat(formData.get('percentage') as string || '0'),
-      shareAmount: parseFloat(formData.get('shareAmount') as string || '0'),
-    };
-
-    try {
-      const res = await fetch('/api/participations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      if (res.ok) {
-        setShowAddPartner(false);
-        fetchProject();
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDeletePartner = async (partId: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا الشريك؟')) return;
-    try {
-      const res = await fetch(`/api/participations?id=${partId}`, { method: 'DELETE' });
-      if (res.ok) fetchProject();
-    } catch (err) { console.error(err); }
   };
 
   if (loading) return (
@@ -194,44 +149,12 @@ export default function ProjectDetailsPage() {
         {/* Tab Content */}
         <div style={{ minHeight: '500px' }}>
           {activeTab === 'overview' && <OverviewTab project={project} progress={progress} />}
-          {activeTab === 'partners' && <PartnersTab project={project} onAdd={() => setShowAddPartner(true)} onDelete={handleDeletePartner} />}
+          {activeTab === 'partners' && <PartnersTab project={project} />}
           {activeTab === 'timeline' && <TimelineTab project={project} />}
           {activeTab === 'finances' && <FinancesTab project={project} />}
           {activeTab === 'documents' && <DocumentsTab project={project} />}
           {activeTab === 'settings' && <SettingsTab project={project} />}
         </div>
-
-        {/* Add Partner Modal */}
-        {showAddPartner && (
-          <div style={modalOverlay}>
-            <Card style={modalCard}>
-              <button onClick={() => setShowAddPartner(false)} style={closeButton}><X size={20} /></button>
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '2rem' }}>إضافة شريك للحجز</h2>
-              <form onSubmit={handleAddPartner} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div style={formGroup}>
-                  <label style={formLabel}>اختر الشريك</label>
-                  <select name="userId" required style={formInput}>
-                    <option value="">-- اختر العضو --</option>
-                    {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                  </select>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                   <div style={formGroup}>
-                      <label style={formLabel}>النسبة (%)</label>
-                      <input name="percentage" type="number" step="0.1" style={formInput} placeholder="50" />
-                   </div>
-                   <div style={formGroup}>
-                      <label style={formLabel}>المبلغ ($)</label>
-                      <input name="shareAmount" type="number" style={formInput} placeholder="10000" />
-                   </div>
-                </div>
-                <Button type="submit" disabled={submitting} style={{ height: '3.5rem', borderRadius: '14px', background: '#064e3b', color: 'white', fontWeight: 800 }}>
-                   {submitting ? <Loader2 className="animate-spin" /> : 'تأكيد الإضافة'}
-                </Button>
-              </form>
-            </Card>
-          </div>
-        )}
 
       </main>
     </div>
@@ -319,27 +242,24 @@ function OverviewTab({ project, progress }: any) {
   );
 }
 
-function PartnersTab({ project, onAdd, onDelete }: any) {
-  const { data: session } = useSession();
-  const isAdmin = (session?.user as any)?.role === 'ADMIN';
-
+function PartnersTab({ project }: any) {
   return (
     <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
         <h3 style={{ fontSize: '1.5rem', fontWeight: 900 }}>سجل حصص الشركاء</h3>
-        {isAdmin && <Button onClick={onAdd} style={{ borderRadius: '12px', background: '#064e3b', color: 'white' }}>إضافة شريك جديد</Button>}
+        <Button style={{ borderRadius: '12px', background: '#064e3b', color: 'white' }}>إضافة شريك جديد</Button>
       </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
         {project.participations?.map((p: any) => {
+          // Fix: Ensure shareAmount is an absolute value and displays correctly
           const amount = Math.abs(p.shareAmount || 0);
           const percentage = p.percentage || (project.totalValue > 0 ? (amount / project.totalValue * 100).toFixed(1) : 0);
           
           return (
           <div key={p.id} style={{ 
             padding: '1.5rem', borderRadius: '24px', border: '1px solid #e2e8f0', background: '#f8fafc',
-            display: 'flex', alignItems: 'center', gap: '1.2rem', transition: 'all 0.2s',
-            position: 'relative'
+            display: 'flex', alignItems: 'center', gap: '1.2rem', transition: 'all 0.2s'
           }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#064e3b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 900 }}>
               {p.user?.name?.charAt(0)}
@@ -348,13 +268,8 @@ function PartnersTab({ project, onAdd, onDelete }: any) {
               <h4 style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.2rem' }}>{p.user?.name}</h4>
               <p dir="ltr" style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>${amount.toLocaleString()}</p>
             </div>
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+            <div style={{ textAlign: 'left' }}>
               <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#064e3b' }}>{percentage}%</div>
-              {isAdmin && (
-                <button onClick={() => onDelete(p.id)} style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '0.2rem' }}>
-                  <Trash2 size={16} />
-                </button>
-              )}
             </div>
           </div>
         )})}
@@ -432,7 +347,7 @@ function FinancesTab({ project }: any) {
                 <td dir="ltr" style={{ padding: '1.2rem', fontWeight: 900, color: '#064e3b', textAlign: 'right' }}>${Math.abs(t.amount || 0).toLocaleString()}</td>
                 <td dir="ltr" style={{ padding: '1.2rem', fontWeight: 800, textAlign: 'right' }}>${Math.abs(t.officialAmount || 0).toLocaleString()}</td>
                 <td style={{ padding: '1.2rem', borderRadius: '16px 0 0 16px' }}>
-                   <Button variant="outline" style={{ color: '#64748b', padding: '0.4rem 0.6rem' }}><ExternalLink size={16} /></Button>
+                   <Button variant="outline" size="sm" style={{ color: '#64748b' }}><ExternalLink size={16} /></Button>
                 </td>
               </tr>
             ))}
@@ -527,43 +442,6 @@ const inputStyle = {
   outline: 'none'
 };
 
-const modalOverlay: any = {
-  position: 'fixed',
-  top: 0, left: 0, right: 0, bottom: 0,
-  background: 'rgba(6, 78, 59, 0.4)',
-  backdropFilter: 'blur(10px)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1000
-};
-
-const modalCard: any = {
-  width: '100%',
-  maxWidth: '500px',
-  padding: '2.5rem',
-  borderRadius: '32px',
-  background: 'white',
-  position: 'relative',
-  boxShadow: '0 40px 100px rgba(0,0,0,0.2)'
-};
-
-const closeButton: any = {
-  position: 'absolute',
-  top: '1.5rem',
-  left: '1.5rem',
-  background: '#f1f5f9',
-  border: 'none',
-  borderRadius: '50%',
-  width: '35px',
-  height: '35px',
-  cursor: 'pointer'
-};
-
-const formGroup = { display: 'flex', flexDirection: 'column', gap: '0.5rem' };
-const formLabel = { fontWeight: 800, fontSize: '0.9rem', color: '#64748b' };
-const formInput = { padding: '1rem', borderRadius: '14px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' };
-
 function getStatusLabel(status: string) {
   const labels: any = { 'UNDER_STUDY': 'تحت الدراسة', 'SUBMITTED': 'تم التقديم', 'ALLOCATED': 'تم التخصيص', 'IN_PROGRESS': 'قيد التنفيذ', 'COMPLETED': 'مكتمل' };
   return labels[status] || status;
@@ -583,3 +461,4 @@ function getPhaseColor(status: string) {
   const colors: any = { 'PENDING': '#94a3b8', 'ACTIVE': '#10b981', 'COMPLETED': '#059669' };
   return colors[status] || '#64748b';
 }
+

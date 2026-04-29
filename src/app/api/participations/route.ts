@@ -1,20 +1,26 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { searchParams } = new URL(request.url);
   const projectId = searchParams.get('projectId');
 
-  if (!projectId) {
-    return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
-  }
-
   try {
+    const whereClause = projectId ? { projectId } : {};
     const participations = await prisma.projectParticipation.findMany({
-      where: { projectId },
+      where: whereClause,
       include: {
         user: true,
+        project: true,
       },
+      orderBy: {
+        project: { name: 'asc' }
+      }
     });
     return NextResponse.json(participations);
   } catch (error) {
@@ -24,45 +30,34 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  try {
-    const { projectId, userId, shareAmount } = await request.json();
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  }
 
-    if (!projectId || !userId || shareAmount === undefined) {
+  try {
+    const { projectId, userId, shareAmount, percentage } = await request.json();
+
+    if (!projectId || !userId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Check if participation already exists
-    const existing = await prisma.projectParticipation.findUnique({
+    const data: any = {};
+    if (shareAmount !== undefined) data.shareAmount = parseFloat(shareAmount);
+    if (percentage !== undefined) data.percentage = parseFloat(percentage);
+
+    const participation = await prisma.projectParticipation.upsert({
       where: {
         projectId_userId: {
           projectId,
           userId,
         },
       },
-    });
-
-    if (existing) {
-      // Update existing participation
-      const updated = await prisma.projectParticipation.update({
-        where: {
-          projectId_userId: {
-            projectId,
-            userId,
-          },
-        },
-        data: {
-          shareAmount,
-        },
-      });
-      return NextResponse.json(updated);
-    }
-
-    // Create new participation
-    const participation = await prisma.projectParticipation.create({
-      data: {
+      update: data,
+      create: {
         projectId,
         userId,
-        shareAmount,
+        ...data
       },
     });
 
@@ -74,6 +69,11 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  }
+
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
@@ -91,3 +91,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+

@@ -61,6 +61,11 @@ export default function ReservationsReport() {
            <Button onClick={handlePrint} style={{ background: '#1e40af', borderRadius: '16px', height: '3.5rem', padding: '0 2rem' }}>
              <Printer size={20} /> طباعة التقرير
            </Button>
+           <Link href="/dashboard/reservations">
+              <Button style={{ background: '#059669', borderRadius: '16px', height: '3.5rem', padding: '0 2rem' }}>
+                إدارة الحجوزات
+              </Button>
+           </Link>
            <Link href="/dashboard/reports/members">
               <Button variant="secondary" style={{ borderRadius: '16px', height: '3.5rem' }}>تقرير أرصدة الأعضاء</Button>
            </Link>
