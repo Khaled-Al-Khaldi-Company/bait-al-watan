@@ -9,6 +9,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+    // Auto-init admin on load to ensure it exists
+    fetch('/api/init-admin').catch(() => {});
+  }, []);
+
   const handleLogin = async () => {
     if (!email || !password) {
       alert('يرجى إدخال البريد وكلمة المرور');
