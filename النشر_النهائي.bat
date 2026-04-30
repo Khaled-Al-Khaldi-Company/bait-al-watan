@@ -10,7 +10,7 @@ git config --global user.name "Bait Al-Watan Admin"
 
 git add .
 git commit -m "Enhance Project Details Page and Fix Math"
-git push origin main -f
+git push origin HEAD:main -f
 
 echo.
 echo ========================================
