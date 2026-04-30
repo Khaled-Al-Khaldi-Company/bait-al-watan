@@ -62,3 +62,57 @@ export async function GET(
     }, { status: 500 });
   }
 }
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user as any).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const { id } = params;
+    const body = await req.json();
+    
+    const updated = await prisma.project.update({
+      where: { id },
+      data: {
+        name: body.name,
+        location: body.location,
+        status: body.status,
+        totalValue: body.totalValue ? parseFloat(body.totalValue) : undefined,
+        plotArea: body.plotArea ? parseFloat(body.plotArea) : undefined,
+        pricePerMeter: body.pricePerMeter ? parseFloat(body.pricePerMeter) : undefined,
+        reservationCode: body.reservationCode,
+        phaseNumber: body.phaseNumber,
+        neighborhood: body.neighborhood,
+        bookingAccount: body.bookingAccount,
+        exchangeRate: body.exchangeRate ? parseFloat(body.exchangeRate) : undefined,
+      }
+    });
+
+    return NextResponse.json(updated);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user as any).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const { id } = params;
+    await prisma.project.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

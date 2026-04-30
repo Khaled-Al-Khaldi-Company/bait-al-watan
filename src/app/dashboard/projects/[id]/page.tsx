@@ -26,6 +26,7 @@ export default function ProjectDetailsPage() {
   const [showAddPartner, setShowAddPartner] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [showAddTransaction, setShowAddTransaction] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -85,6 +86,69 @@ export default function ProjectDetailsPage() {
     if (!confirm('هل أنت متأكد من حذف هذا الشريك؟')) return;
     try {
       const res = await fetch(`/api/participations?id=${partId}`, { method: 'DELETE' });
+      if (res.ok) fetchProject();
+    } catch (err) { console.error(err); }
+  };
+
+  const handleUpdateProject = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    const body = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch(`/api/projects/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) {
+        alert('تم تحديث البيانات بنجاح');
+        fetchProject();
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!confirm('تحذير: سيتم حذف كافة البيانات المرتبطة بهذا الحجز نهائياً. هل أنت متأكد؟')) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+      if (res.ok) router.push('/dashboard/projects');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAddTransaction = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    formData.append('projectId', id as string);
+
+    try {
+      const res = await fetch('/api/finances', {
+        method: 'POST',
+        body: formData
+      });
+      if (res.ok) {
+        setShowAddTransaction(false);
+        fetchProject();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'فشل إضافة العملية');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteTransaction = async (transId: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذه العملية المالية؟')) return;
+    try {
+      const res = await fetch(`/api/finances?id=${transId}`, { method: 'DELETE' });
       if (res.ok) fetchProject();
     } catch (err) { console.error(err); }
   };
@@ -202,9 +266,9 @@ export default function ProjectDetailsPage() {
           {activeTab === 'overview' && <OverviewTab project={project} progress={progress} />}
           {activeTab === 'partners' && <PartnersTab project={project} onAdd={() => setShowAddPartner(true)} onDelete={handleDeletePartner} />}
           {activeTab === 'timeline' && <TimelineTab project={project} />}
-          {activeTab === 'finances' && <FinancesTab project={project} />}
+          {activeTab === 'finances' && <FinancesTab project={project} onAdd={() => setShowAddTransaction(true)} onDelete={handleDeleteTransaction} />}
           {activeTab === 'documents' && <DocumentsTab project={project} />}
-          {activeTab === 'settings' && <SettingsTab project={project} />}
+          {activeTab === 'settings' && <SettingsTab project={project} onSubmit={handleUpdateProject} onDelete={handleDeleteProject} submitting={submitting} />}
         </div>
 
         {/* Add Partner Modal */}
@@ -233,6 +297,73 @@ export default function ProjectDetailsPage() {
                 </div>
                 <Button type="submit" disabled={submitting} style={{ height: '3.5rem', borderRadius: '14px', background: '#064e3b', color: 'white', fontWeight: 800 }}>
                    {submitting ? <Loader2 className="animate-spin" /> : 'تأكيد الإضافة'}
+                </Button>
+              </form>
+            </Card>
+          </div>
+        )}
+
+        {/* Add Transaction Modal */}
+        {showAddTransaction && (
+          <div style={modalOverlay}>
+            <Card style={{ ...modalCard, maxWidth: '650px' }}>
+              <button onClick={() => setShowAddTransaction(false)} style={closeButton}><X size={20} /></button>
+              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '2rem' }}>تسجيل عملية مالية جديدة</h2>
+              <form onSubmit={handleAddTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                   <div style={formGroup}>
+                      <label style={formLabel}>نوع العملية</label>
+                      <select name="type" required style={formInput}>
+                        <option value="MEMBER_CONTRIBUTION">مساهمة من شريك (إيداع)</option>
+                        <option value="AUTHORITY_PAYMENT">سداد للهيئة (قسط/رسوم)</option>
+                        <option value="OTHER_EXPENSE">مصاريف أخرى (عمولات/إداري)</option>
+                        <option value="RESERVATION_FEE_PAYMENT">رسوم حجز</option>
+                        <option value="INSTALLMENT_PAYMENT">قسط دوري</option>
+                      </select>
+                   </div>
+                   <div style={formGroup}>
+                      <label style={formLabel}>الشريك المرتبط (اختياري)</label>
+                      <select name="userId" style={formInput}>
+                        <option value="">-- اختر الشريك --</option>
+                        {project.participations?.map((p: any) => <option key={p.user.id} value={p.user.id}>{p.user.name}</option>)}
+                      </select>
+                   </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                   <div style={formGroup}>
+                      <label style={formLabel}>المبلغ الإجمالي ($)</label>
+                      <input name="amount" type="number" step="0.01" required style={formInput} placeholder="0.00" />
+                   </div>
+                   <div style={formGroup}>
+                      <label style={formLabel}>المبلغ الرسمي للهيئة ($)</label>
+                      <input name="officialAmount" type="number" step="0.01" style={formInput} placeholder="0.00" />
+                   </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                   <div style={formGroup}>
+                      <label style={formLabel}>التاريخ</label>
+                      <input name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} style={formInput} />
+                   </div>
+                   <div style={formGroup}>
+                      <label style={formLabel}>سعر صرف الجنيه (EGP)</label>
+                      <input name="egpRate" type="number" step="0.1" defaultValue="50" style={formInput} />
+                   </div>
+                </div>
+
+                <div style={formGroup}>
+                  <label style={formLabel}>البيان / الملاحظات</label>
+                  <input name="purpose" required style={formInput} placeholder="مثال: القسط الأول - الحجز الرسمي" />
+                </div>
+
+                <div style={formGroup}>
+                  <label style={formLabel}>سند الإيداع / المرفق</label>
+                  <input name="attachment" type="file" style={{ ...formInput, padding: '0.6rem' }} />
+                </div>
+
+                <Button type="submit" disabled={submitting} style={{ height: '3.5rem', borderRadius: '14px', background: '#064e3b', color: 'white', fontWeight: 800, marginTop: '1rem' }}>
+                   {submitting ? <Loader2 className="animate-spin" /> : 'حفظ العملية المالية'}
                 </Button>
               </form>
             </Card>
@@ -411,10 +542,20 @@ function TimelineTab({ project }: any) {
   );
 }
 
-function FinancesTab({ project }: any) {
+function FinancesTab({ project, onAdd, onDelete }: any) {
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as any)?.role === 'ADMIN' || (session?.user?.name || '').includes('مدير');
+
   return (
     <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
-      <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '2rem' }}>سجل المعاملات المالية</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1.5rem', fontWeight: 900 }}>سجل المعاملات المالية</h3>
+        {isAdmin && (
+          <Button onClick={onAdd} style={{ borderRadius: '14px', background: '#064e3b', color: 'white', gap: '0.5rem' }}>
+            <DollarSign size={18} /> إضافة عملية جديدة
+          </Button>
+        )}
+      </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0.8rem' }}>
           <thead>
@@ -436,10 +577,21 @@ function FinancesTab({ project }: any) {
                    <div style={{ fontSize: '0.75rem', opacity: 0.5 }}>{t.type}</div>
                 </td>
                 <td style={{ padding: '1.2rem', fontWeight: 600 }}>{t.purpose}</td>
-                <td dir="ltr" style={{ padding: '1.2rem', fontWeight: 900, color: '#064e3b', textAlign: 'right' }}>${Math.abs(t.amount || 0).toLocaleString()}</td>
+                <td dir="ltr" style={{ padding: '1.2rem', fontWeight: 900, color: t.amount < 0 ? '#ef4444' : '#064e3b', textAlign: 'right' }}>
+                  {t.amount < 0 ? '-' : ''}${Math.abs(t.amount || 0).toLocaleString()}
+                </td>
                 <td dir="ltr" style={{ padding: '1.2rem', fontWeight: 800, textAlign: 'right' }}>${Math.abs(t.officialAmount || 0).toLocaleString()}</td>
                 <td style={{ padding: '1.2rem', borderRadius: '16px 0 0 16px' }}>
-                   <Button variant="outline" style={{ color: '#64748b', padding: '0.4rem 0.6rem' }}><ExternalLink size={16} /></Button>
+                   <div style={{ display: 'flex', gap: '0.5rem' }}>
+                     {t.attachmentUrl && (
+                       <a href={t.attachmentUrl} target="_blank" rel="noopener noreferrer">
+                         <Button variant="outline" style={{ color: '#64748b', padding: '0.4rem 0.6rem' }}><ExternalLink size={16} /></Button>
+                       </a>
+                     )}
+                     {isAdmin && (
+                       <Button onClick={() => onDelete(t.id)} variant="outline" style={{ color: '#ef4444', padding: '0.4rem 0.6rem', borderColor: '#fee2e2' }}><Trash2 size={16} /></Button>
+                     )}
+                   </div>
                 </td>
               </tr>
             ))}
@@ -482,31 +634,76 @@ function DocumentsTab({ project }: any) {
   );
 }
 
-function SettingsTab({ project }: any) {
+function SettingsTab({ project, onSubmit, onDelete, submitting }: any) {
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as any)?.role === 'ADMIN' || (session?.user?.name || '').includes('مدير');
+
+  if (!isAdmin) return <Card style={{ padding: '2rem', textAlign: 'center' }}>عذراً، هذه الصفحة متاحة للمدراء فقط.</Card>;
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
       <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
         <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem' }}>تعديل بيانات الحجز</h3>
-        <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 800, fontSize: '0.9rem', color: '#64748b' }}>اسم الحجز</label>
-              <input defaultValue={project.name} style={inputStyle} />
+            <div style={formGroup}>
+              <label style={formLabel}>اسم الحجز</label>
+              <input name="name" defaultValue={project.name} style={inputStyle} required />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 800, fontSize: '0.9rem', color: '#64748b' }}>الموقع</label>
-              <input defaultValue={project.location} style={inputStyle} />
+            <div style={formGroup}>
+              <label style={formLabel}>الموقع</label>
+              <input name="location" defaultValue={project.location} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>الحي / المنطقة</label>
+              <input name="neighborhood" defaultValue={project.neighborhood} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>المرحلة</label>
+              <input name="phaseNumber" defaultValue={project.phaseNumber} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>إجمالي القيمة ($)</label>
+              <input name="totalValue" type="number" defaultValue={project.totalValue} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>مساحة الأرض (م²)</label>
+              <input name="plotArea" type="number" defaultValue={project.plotArea} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>سعر المتر ($)</label>
+              <input name="pricePerMeter" type="number" step="0.1" defaultValue={project.pricePerMeter} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>رقم الحجز</label>
+              <input name="reservationCode" defaultValue={project.reservationCode} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>سعر الصرف المعتمد (SAR)</label>
+              <input name="exchangeRate" type="number" step="0.01" defaultValue={project.exchangeRate || 3.75} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>حالة الحجز</label>
+              <select name="status" defaultValue={project.status} style={inputStyle}>
+                <option value="UNDER_STUDY">تحت الدراسة</option>
+                <option value="SUBMITTED">تم التقديم</option>
+                <option value="ALLOCATED">تم التخصيص</option>
+                <option value="IN_PROGRESS">قيد التنفيذ</option>
+                <option value="COMPLETED">مكتمل</option>
+              </select>
             </div>
           </div>
-          <Button style={{ height: '3.5rem', borderRadius: '14px', background: '#064e3b', color: 'white', marginTop: '1rem' }}>حفظ التغييرات</Button>
+          <Button type="submit" disabled={submitting} style={{ height: '3.5rem', borderRadius: '14px', background: '#064e3b', color: 'white', marginTop: '1rem', fontWeight: 800 }}>
+            {submitting ? <Loader2 className="animate-spin" /> : 'حفظ كافة التغييرات'}
+          </Button>
         </form>
       </Card>
       
       <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '2px solid #fee2e2', background: 'white' }}>
         <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#dc2626', marginBottom: '1rem' }}>منطقة الخطر</h3>
         <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1.5rem' }}>حذف هذا الحجز سيؤدي إلى مسح كافة المعاملات والمستندات المرتبطة به نهائياً.</p>
-        <Button variant="outline" style={{ width: '100%', color: '#dc2626', borderColor: '#fee2e2', height: '3.2rem', borderRadius: '12px', background: 'white' }}>
-          <Trash2 size={18} /> حذف الحجز نهائياً
+        <Button onClick={onDelete} variant="outline" disabled={submitting} style={{ width: '100%', color: '#dc2626', borderColor: '#fee2e2', height: '3.2rem', borderRadius: '12px', background: 'white', fontWeight: 800 }}>
+          <Trash2 size={18} /> {submitting ? 'جاري الحذف...' : 'حذف الحجز نهائياً'}
         </Button>
       </Card>
     </div>
