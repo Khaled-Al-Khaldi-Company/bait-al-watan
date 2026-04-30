@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Building2, Users, FileText,
   Wallet, Landmark, BarChart3, Settings, LogOut,
@@ -11,7 +12,7 @@ import {
   Zap, ShieldCheck, Crown
 } from 'lucide-react';
 
-const EXPANDED_W = 280; // Wider for luxury feel
+const EXPANDED_W = 280; 
 const COLLAPSED_W = 80;
 
 export default function Sidebar() {
@@ -39,13 +40,12 @@ export default function Sidebar() {
     { href: '/dashboard/messages',  icon: <MessageSquare size={22} />,   label: 'المراسلات' },
   ];
 
-  const w = isCollapsed ? COLLAPSED_W : EXPANDED_W;
-
   return (
-    <aside
+    <motion.aside
+      initial={false}
+      animate={{ width: isCollapsed ? COLLAPSED_W : EXPANDED_W }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       style={{
-        width: `${w}px`,
-        minWidth: `${w}px`,
         background: 'linear-gradient(185deg, #0f172a 0%, #1e293b 40%, #020617 100%)',
         color: 'white',
         display: 'flex',
@@ -55,7 +55,6 @@ export default function Sidebar() {
         right: 0,
         top: 0,
         zIndex: 1000,
-        transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)',
         overflow: 'hidden',
         boxShadow: '-10px 0 40px rgba(0,0,0,0.3)',
         borderLeft: '1px solid rgba(255,255,255,0.08)',
@@ -72,7 +71,8 @@ export default function Sidebar() {
           marginBottom: '1rem',
         }}
       >
-        <div
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 5 }}
           style={{
             width: '45px',
             height: '45px',
@@ -86,21 +86,29 @@ export default function Sidebar() {
           }}
         >
           <Building2 color="#042f2e" size={24} strokeWidth={2.5} />
-        </div>
-        {!isCollapsed && (
-          <div style={{ overflow: 'hidden' }}>
-            <div style={{ fontWeight: 950, fontSize: '1.4rem', letterSpacing: '-0.5px', color: '#fef3c7' }}>
-              بيت الوطن
-            </div>
-            <div style={{ fontSize: '0.65rem', opacity: 0.5, letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 800 }}>
-              Luxury Living
-            </div>
-          </div>
-        )}
+        </motion.div>
+        
+        <AnimatePresence>
+          {!isCollapsed && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div style={{ fontWeight: 950, fontSize: '1.4rem', letterSpacing: '-0.5px', color: '#fef3c7' }}>
+                بيت الوطن
+              </div>
+              <div style={{ fontSize: '0.65rem', opacity: 0.5, letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 800 }}>
+                Luxury Living
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── Navigation ────────────────────────────── */}
-      <div
+      <motion.div
         style={{
           flex: 1,
           overflowY: 'auto',
@@ -110,36 +118,49 @@ export default function Sidebar() {
           gap: '6px',
         }}
       >
-        {menuItems.map(item => {
+        {menuItems.map((item, idx) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: isCollapsed ? 'center' : 'flex-start',
-                gap: '1rem',
-                padding: isCollapsed ? '1rem' : '0.9rem 1.2rem',
-                borderRadius: '16px',
-                textDecoration: 'none',
-                color: isActive ? '#ffffff' : 'rgba(255,255,255,0.5)',
-                background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent',
-                fontWeight: isActive ? 800 : 600,
-                fontSize: '0.95rem',
-                transition: 'all 0.2s',
-                border: isActive ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
-              }}
-            >
-              <span style={{ color: isActive ? '#fbbf24' : 'inherit' }}>
-                {item.icon}
-              </span>
-              {!isCollapsed && <span>{item.label}</span>}
+            <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                whileHover={{ x: -5, background: 'rgba(255,255,255,0.05)' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isCollapsed ? 'center' : 'flex-start',
+                  gap: '1rem',
+                  padding: isCollapsed ? '1rem' : '0.9rem 1.2rem',
+                  borderRadius: '16px',
+                  color: isActive ? '#ffffff' : 'rgba(255,255,255,0.5)',
+                  background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  fontWeight: isActive ? 800 : 600,
+                  fontSize: '0.95rem',
+                  transition: 'all 0.2s',
+                  border: isActive ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
+                  position: 'relative'
+                }}
+              >
+                {isActive && (
+                  <motion.div 
+                    layoutId="active-pill"
+                    style={{ 
+                      position: 'absolute', right: 0, width: '4px', height: '20px', 
+                      background: '#fbbf24', borderRadius: '4px 0 0 4px' 
+                    }} 
+                  />
+                )}
+                <span style={{ color: isActive ? '#fbbf24' : 'inherit' }}>
+                  {item.icon}
+                </span>
+                {!isCollapsed && <span>{item.label}</span>}
+              </motion.div>
             </Link>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* ── Bottom Section ───────────────────────── */}
       <div
@@ -151,26 +172,32 @@ export default function Sidebar() {
           gap: '1rem',
         }}
       >
-        {/* User Card */}
-        <div style={{ 
-          background: 'rgba(255,255,255,0.04)', 
-          borderRadius: '20px', 
-          padding: isCollapsed ? '0.8rem' : '1rem',
-          display: 'flex', 
-          alignItems: 'center',
-          gap: '0.8rem',
-          border: '1px solid rgba(255,255,255,0.05)'
-        }}>
+        <motion.div 
+          whileHover={{ scale: 1.02 }}
+          style={{ 
+            background: 'rgba(255,255,255,0.04)', 
+            borderRadius: '20px', 
+            padding: isCollapsed ? '0.8rem' : '1rem',
+            display: 'flex', 
+            alignItems: 'center',
+            gap: '0.8rem',
+            border: '1px solid rgba(255,255,255,0.05)'
+          }}
+        >
            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #fbbf24, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <User size={20} color="#042f2e" />
            </div>
            {!isCollapsed && (
-             <div style={{ flex: 1, overflow: 'hidden' }}>
+             <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               style={{ flex: 1, overflow: 'hidden' }}
+             >
                 <div style={{ fontWeight: 900, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name || 'المدير'}</div>
                 <div style={{ fontSize: '0.65rem', color: '#fbbf24', fontWeight: 800 }}>التحكم الكامل</div>
-             </div>
+             </motion.div>
            )}
-        </div>
+        </motion.div>
 
         <button 
           onClick={() => signOut()}
@@ -194,7 +221,9 @@ export default function Sidebar() {
       </div>
 
       {/* Collapse Toggle */}
-      <button 
+      <motion.button 
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => setIsCollapsed(!isCollapsed)}
         style={{
           position: 'absolute',
@@ -215,7 +244,7 @@ export default function Sidebar() {
         }}
       >
         {isCollapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-      </button>
-    </aside>
+      </motion.button>
+    </motion.aside>
   );
 }
