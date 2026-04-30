@@ -1,0 +1,13 @@
+@echo off
+echo [1/4] Undoing the bad commit...
+git reset --soft HEAD~1
+echo [2/4] Removing git_info.txt from index...
+git reset git_info.txt
+echo [3/4] Committing clean changes...
+git commit -m "Pure clean deployment"
+echo [4/4] Pushing to GitHub...
+git push origin main --force
+echo ===========================================
+echo DONE! This should definitely work now.
+echo ===========================================
+pause
