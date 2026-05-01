@@ -18,12 +18,25 @@ export async function POST(
     
     const { amount, officialAmount, date, purpose, type, userId, egpRate } = body;
 
+    // ─── فرض الإشارة (موجب للإيداع، سالب للصرف) ──────────────────────────
+    let finalAmount = parseFloat(amount);
+    const spendingTypes = [
+      'AUTHORITY_PAYMENT', 'RESERVATION_FEE_PAYMENT', 'INSTALLMENT_PAYMENT', 
+      'OTHER_EXPENSE', 'COMMISSION', 'ACTIVATION_TRANSFER', 'LIQUIDITY_TRANSFER'
+    ];
+    
+    if (spendingTypes.includes(type)) {
+      finalAmount = -Math.abs(finalAmount); 
+    } else if (type === 'MEMBER_CONTRIBUTION') {
+      finalAmount = Math.abs(finalAmount);
+    }
+
     const transaction = await prisma.transaction.create({
       data: {
         projectId,
         userId: userId || (session.user as any).id,
         type: type || 'AUTHORITY_PAYMENT',
-        amount: parseFloat(amount),
+        amount: finalAmount,
         officialAmount: officialAmount ? Math.abs(parseFloat(officialAmount)) : 0,
         egpRate: egpRate ? parseFloat(egpRate) : null,
         date: new Date(date),
