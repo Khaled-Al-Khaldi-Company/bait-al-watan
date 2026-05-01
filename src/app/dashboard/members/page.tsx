@@ -203,19 +203,31 @@ export default function MembersPage() {
           </AnimatePresence>
         </div>
 
-        {/* Modern Modal */}
+        {/* Premium Modal */}
         <AnimatePresence>
           {showModal && (
-            <div style={modalOverlay}>
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1500, padding: '1rem' }}>
               <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                style={modalCard}
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                style={{ background: 'white', padding: '3.5rem', borderRadius: '40px', width: '100%', maxWidth: '550px', boxShadow: '0 50px 100px rgba(0,0,0,0.2)', position: 'relative' }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-                   <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0f172a' }}>إضافة عضو جديد للنظام</h2>
-                   <button onClick={() => setShowModal(false)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f1f5f9', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
+                <button 
+                  onClick={() => setShowModal(false)} 
+                  style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', width: '45px', height: '45px', borderRadius: '50%', background: '#f1f5f9', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', transition: 'all 0.2s' }}
+                  className="close-btn-hover"
+                >
+                  <X size={24} />
+                </button>
+
+                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                  <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: '#064e3b10', color: '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                    <Users size={36} />
+                  </div>
+                  <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a' }}>إضافة عضو جديد 👤</h2>
+                  <p style={{ opacity: 0.5, fontWeight: 700 }}>قم بتعبئة بيانات العضو لمنحه حق الوصول للنظام.</p>
                 </div>
 
                 <form onSubmit={handleAddMember} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -235,10 +247,10 @@ export default function MembersPage() {
                         <option value="ADMIN">مدير نظام (تحكم كامل)</option>
                      </select>
                   </div>
-                  <div style={{ background: '#fffbeb', padding: '1rem', borderRadius: '14px', border: '1px solid #fef3c7', fontSize: '0.85rem', color: '#92400e', fontWeight: 700, textAlign: 'center' }}>
+                  <div style={{ background: '#fffbeb', padding: '1.2rem', borderRadius: '18px', border: '1px solid #fef3c7', fontSize: '0.9rem', color: '#92400e', fontWeight: 700, textAlign: 'center' }}>
                      ملاحظة: سيتم تعيين "password123" ككلمة مرور افتراضية.
                   </div>
-                  <Button type="submit" disabled={submitting} style={{ height: '4rem', borderRadius: '18px', background: '#064e3b', color: 'white', fontWeight: 800, fontSize: '1.1rem', marginTop: '1rem' }}>
+                  <Button type="submit" disabled={submitting} style={{ height: '4.5rem', borderRadius: '22px', background: '#064e3b', color: 'white', fontWeight: 900, fontSize: '1.2rem', marginTop: '1rem', boxShadow: '0 10px 25px rgba(6, 78, 59, 0.2)' }}>
                      {submitting ? <Loader2 className="animate-spin" /> : 'تأكيد إنشاء الحساب'}
                   </Button>
                 </form>
@@ -246,15 +258,19 @@ export default function MembersPage() {
             </div>
           )}
         </AnimatePresence>
+
+        <style dangerouslySetInnerHTML={{ __html: `
+          .close-btn-hover:hover { background: #fee2e2 !important; color: #ef4444 !important; transform: rotate(90deg); }
+        `}} />
       </main>
     </div>
   );
 }
 
-const inputStyle = {
-  padding: '0.85rem',
-  borderRadius: 'var(--radius)',
-  border: '1px solid hsl(var(--border))',
-  background: 'white',
-  fontSize: '1rem'
+// Styles
+const formGroup = { display: 'flex', flexDirection: 'column' as const, gap: '0.6rem' };
+const formLabel = { fontSize: '0.95rem', fontWeight: 800, color: '#475569' };
+const formInput = { 
+  padding: '1.1rem 1.4rem', borderRadius: '18px', border: '1px solid #e2e8f0', background: '#f8fafc',
+  fontSize: '1rem', fontWeight: 600, outline: 'none', transition: 'all 0.2s'
 };
