@@ -47,11 +47,7 @@ export async function GET(req: NextRequest) {
         
         const memberTransactions = part.project.transactions.filter(t => 
           t.userId === user.id && 
-          !t.purpose?.includes('[') && 
-          !t.purpose?.includes('مناقلة') && 
-          !t.purpose?.includes('رصيد افتتاح') && 
-          !t.purpose?.includes('فتح محفظة') &&
-          t.type !== 'FUND_REALLOCATION'
+          ['MEMBER_CONTRIBUTION', 'INSTALLMENT_PAYMENT', 'RESERVATION_FEE_PAYMENT'].includes(t.type)
         );
 
         const paidUSD = memberTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
@@ -66,14 +62,19 @@ export async function GET(req: NextRequest) {
         totalPaidEGP += paidEGP;
       });
 
+      const totalRemainingUSD = totalRequiredUSD - totalPaidUSD;
+      // Estimate remaining EGP based on 50 rate if not specified
+      const totalRemainingEGP = totalRemainingUSD * 50;
+
       return {
         id: user.id,
         name: user.name,
         email: user.email,
-        requiredUSD: totalRequiredUSD,
-        paidUSD: totalPaidUSD,
-        paidEGP: totalPaidEGP,
-        remainingUSD: totalRequiredUSD - totalPaidUSD,
+        totalRequired: totalRequiredUSD,
+        totalPaid: totalPaidUSD,
+        totalPaidEGP: totalPaidEGP,
+        totalRemaining: totalRemainingUSD,
+        totalRemainingEGP: totalRemainingEGP,
         progress: totalRequiredUSD > 0 ? (totalPaidUSD / totalRequiredUSD) * 100 : 0
       };
     });

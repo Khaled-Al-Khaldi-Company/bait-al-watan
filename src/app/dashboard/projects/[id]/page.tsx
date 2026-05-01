@@ -203,6 +203,7 @@ export default function ProjectDetailsPage() {
       targetProjectId: formData.get('targetProjectId'),
       amount: parseFloat(formData.get('amount') as string),
       purpose: formData.get('purpose'),
+      transferType: formData.get('transferType') || 'LIQUIDITY_TRANSFER',
       mirrorPartners: true,
       date: formData.get('date')
     };
@@ -508,6 +509,17 @@ export default function ProjectDetailsPage() {
                 <div style={formGroup}>
                   <label style={formLabel}>المبلغ المراد تحويله ($)</label>
                   <input name="amount" type="number" step="0.01" required style={formInput} placeholder="0.00" />
+                </div>
+                <div style={formGroup}>
+                  <label style={formLabel}>نوع المناقلة</label>
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700 }}>
+                      <input type="radio" name="transferType" value="LIQUIDITY_TRANSFER" defaultChecked /> سيولة نقدية
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700 }}>
+                      <input type="radio" name="transferType" value="AUTHORITY_BALANCE" /> رصيد هيئة (افتراضي)
+                    </label>
+                  </div>
                 </div>
                 <div style={formGroup}>
                   <label style={formLabel}>البيان / السبب</label>

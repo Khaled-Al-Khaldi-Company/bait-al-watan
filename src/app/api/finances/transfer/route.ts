@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
               projectId: targetProjectId,
               userId: pt.userId,
               amount: isVirtual ? 0 : pt.amount,
-              officialAmount: isVirtual ? pt.amount : (isVirtual ? 0 : 0), // Logic check
+              officialAmount: isVirtual ? pt.amount : 0,
               type: isVirtual ? 'AUTHORITY_PAYMENT' : 'MEMBER_CONTRIBUTION',
               purpose: `[${transferId}] ${isVirtual ? 'رصيد هيئة مرحل' : 'سيولة مرحلة'} من ${sourceName}`,
               date: date ? new Date(date) : new Date(),

@@ -43,14 +43,28 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
     }
 
     if (isPatch) {
+      const existing = await prisma.transaction.findUnique({ where: { id } });
+      if (!existing) return NextResponse.json({ error: 'العملية غير موجودة' }, { status: 404 });
+
+      const finalType = type || existing.type;
+      const spendingTypes = [
+        'AUTHORITY_PAYMENT', 'RESERVATION_FEE_PAYMENT', 'INSTALLMENT_PAYMENT', 
+        'OTHER_EXPENSE', 'COMMISSION', 'ACTIVATION_TRANSFER', 'LIQUIDITY_TRANSFER'
+      ];
+
       const updateData: any = {};
-      if (amount) updateData.amount = parseFloat(amount);
-      if (officialAmount) updateData.officialAmount = parseFloat(officialAmount);
+      if (amount) {
+        let val = Math.abs(parseFloat(amount));
+        if (spendingTypes.includes(finalType)) val = -val;
+        updateData.amount = val;
+      }
+      if (officialAmount !== null && officialAmount !== undefined) updateData.officialAmount = Math.abs(parseFloat(officialAmount));
       if (date) updateData.date = new Date(date);
       if (purpose) updateData.purpose = purpose;
       if (type) updateData.type = type;
       if (egpRate) updateData.egpRate = parseFloat(egpRate);
       if (attachmentUrl) updateData.attachmentUrl = attachmentUrl;
+      if (targetUserId) updateData.userId = targetUserId;
 
       const transaction = await prisma.transaction.update({
         where: { id },
