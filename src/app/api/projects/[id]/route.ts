@@ -115,13 +115,36 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
     if (!session || (session.user as any).role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      return NextResponse.json({ error: 'عذراً، لا تملك صلاحية الحذف' }, { status: 403 });
     }
 
     const { id } = params;
-    await prisma.project.delete({ where: { id } });
+
+    // Use a transaction to ensure clean deletion of all related data
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete all tasks related to phases of this project
+      const phases = await tx.phase.findMany({ where: { projectId: id }, select: { id: true } });
+      const phaseIds = phases.map(p => p.id);
+      await tx.task.deleteMany({ where: { phaseId: { in: phaseIds } } });
+
+      // 2. Delete all other relations (Prisma schema has Cascade, but being explicit is safer)
+      await tx.document.deleteMany({ where: { projectId: id } });
+      await tx.transaction.deleteMany({ where: { projectId: id } });
+      await tx.projectParticipation.deleteMany({ where: { projectId: id } });
+      await tx.obligation.deleteMany({ where: { projectId: id } });
+      await tx.chatMessage.deleteMany({ where: { projectId: id } });
+      await tx.phase.deleteMany({ where: { projectId: id } });
+
+      // 3. Finally delete the project itself
+      await tx.project.delete({ where: { id } });
+    });
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Delete Project Error:', error);
+    return NextResponse.json({ 
+      error: 'فشل حذف الحجز', 
+      details: error.message 
+    }, { status: 500 });
   }
 }

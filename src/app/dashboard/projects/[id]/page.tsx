@@ -140,7 +140,14 @@ export default function ProjectDetailsPage() {
     setSubmitting(true);
     try {
       const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
-      if (res.ok) router.push('/dashboard/projects');
+      if (res.ok) {
+        router.push('/dashboard/projects');
+      } else {
+        const data = await res.json();
+        alert(`فشل الحذف: ${data.error || 'خطأ غير معروف'}`);
+      }
+    } catch (err: any) {
+      alert(`خطأ في الاتصال: ${err.message}`);
     } finally {
       setSubmitting(false);
     }
