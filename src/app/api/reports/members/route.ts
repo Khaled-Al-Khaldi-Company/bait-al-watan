@@ -8,19 +8,17 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const projectId = searchParams.get('projectId');
 
-    if (!projectId) {
-      return NextResponse.json({ error: 'Missing projectId' }, { status: 400 });
-    }
-
     const users = await prisma.user.findMany({
-      where: {
+      where: projectId ? {
         participations: {
           some: { projectId }
         }
+      } : {
+        role: { in: ['MEMBER', 'ADMIN'] }
       },
       include: {
         participations: {
-          where: { projectId },
+          where: projectId ? { projectId } : {},
           include: {
             project: {
               include: {

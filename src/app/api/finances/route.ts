@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
 import prisma from "@/lib/prisma";
+import { uploadFile } from '@/lib/upload';
 
 async function handleFinanceRequest(req: NextRequest, isPatch = false) {
   try {
@@ -33,13 +34,7 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
 
     let attachmentUrl = null;
     if (file && file.size > 0) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-      const uploadDir = path.join(process.cwd(), 'storage', 'uploads');
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-      const filePath = path.join(uploadDir, filename);
-      fs.writeFileSync(filePath, buffer);
-      attachmentUrl = `/api/files/uploads/${filename}`;
+      attachmentUrl = await uploadFile(file);
     }
 
     if (isPatch) {

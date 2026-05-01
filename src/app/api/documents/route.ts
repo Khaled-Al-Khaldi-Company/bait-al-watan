@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
+import { uploadFile } from '@/lib/upload';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,17 +18,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-    const uploadDir = path.join(process.cwd(), 'storage', 'uploads');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    const filePath = path.join(uploadDir, filename);
-    fs.writeFileSync(filePath, buffer);
+    const url = await uploadFile(file);
 
     const document = await prisma.document.create({
       data: {
         name: file.name,
-        url: `/api/files/uploads/${filename}`,
+        url: url,
         type: type || 'OTHER',
         projectId: projectId,
       }
