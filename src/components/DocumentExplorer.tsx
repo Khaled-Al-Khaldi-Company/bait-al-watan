@@ -293,7 +293,7 @@ export default function DocumentExplorer({ projectId }: { projectId?: string }) 
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              style={{ background: 'white', padding: '3.5rem', borderRadius: '40px', width: '100%', maxWidth: '500px', boxShadow: '0 50px 100px rgba(0,0,0,0.2)', position: 'relative' }}
+              style={{ background: 'white', padding: '2.5rem', borderRadius: '40px', width: '100%', maxWidth: '500px', maxHeight: '95vh', overflowY: 'auto', boxShadow: '0 50px 100px rgba(0,0,0,0.2)', position: 'relative' }}
             >
               <button 
                 onClick={() => setShowUploadModal(false)} 
