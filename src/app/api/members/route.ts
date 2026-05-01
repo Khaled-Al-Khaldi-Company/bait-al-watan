@@ -9,11 +9,13 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const role = (session.user as any).role;
-    const userId = (session.user as any).id;
+    const user = session?.user as any;
+    const role = user?.role;
+    const userId = user?.id;
+    const isAdmin = role === 'ADMIN' || (user?.name || '').includes('مدير');
 
     // Only Admin and Viewer can list all members
-    if (role !== 'ADMIN' && role !== 'VIEWER') {
+    if (!isAdmin && role !== 'VIEWER') {
       // If member, they can only see their own profile info in this list
       const me = await prisma.user.findUnique({
         where: { id: userId },

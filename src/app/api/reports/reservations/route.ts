@@ -10,11 +10,13 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const userId = (session.user as any).id;
-    const role = (session.user as any).role;
+    const user = session?.user as any;
+    const userId = user?.id;
+    const role = user?.role;
+    const isAdmin = role === 'ADMIN' || (user?.name || '').includes('مدير');
 
     // Filter by user if they are a MEMBER
-    const whereClause = role === 'ADMIN' || role === 'VIEWER' ? {} : { userId };
+    const whereClause = isAdmin || role === 'VIEWER' ? {} : { userId };
 
     const participations = await prisma.projectParticipation.findMany({
       where: whereClause,

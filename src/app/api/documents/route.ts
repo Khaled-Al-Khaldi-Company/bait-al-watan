@@ -9,13 +9,20 @@ import { uploadFile } from '@/lib/upload';
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    const user = session?.user as any;
+    const isAdmin = user?.role === 'ADMIN' || (user?.name || '').includes('مدير');
+
+    if (!session || !isAdmin) {
+      return NextResponse.json({ error: 'عذراً، هذه الصلاحية للمدراء فقط.' }, { status: 403 });
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const projectId = formData.get('projectId') as string;
     const type = formData.get('type') as string;
 
     if (!file || !projectId) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'يجب اختيار ملف وتحديد المشروع المرتبط.' }, { status: 400 });
     }
 
     const url = await uploadFile(file);

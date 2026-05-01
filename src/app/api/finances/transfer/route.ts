@@ -6,8 +6,11 @@ import { authOptions } from '@/lib/auth';
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized. Admin only.' }, { status: 403 });
+    const user = session?.user as any;
+    const isAdmin = user?.role === 'ADMIN' || (user?.name || '').includes('مدير');
+    
+    if (!session || !isAdmin) {
+      return NextResponse.json({ error: 'عذراً، هذه الصلاحية للمدراء فقط.' }, { status: 403 });
     }
 
     const userId = (session.user as any).id;

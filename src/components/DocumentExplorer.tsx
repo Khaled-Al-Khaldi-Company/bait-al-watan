@@ -283,42 +283,71 @@ export default function DocumentExplorer({ projectId }: { projectId?: string }) 
         </div>
       )}
 
-      {/* Upload Modal */}
-      {showUploadModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(6, 78, 59, 0.4)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1500 }}>
-          <Card style={{ width: '100%', maxWidth: '450px', padding: '2.5rem', borderRadius: '32px', position: 'relative', border: 'none' }}>
-            <button onClick={() => setShowUploadModal(false)} style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer' }}><X size={20} /></button>
-            <h3 style={{ marginBottom: '2rem', textAlign: 'center', fontWeight: 800 }}>رفع مستند جديد</h3>
-            <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <FormGroup label="الملف المرفق">
-                <input type="file" name="file" required style={{ padding: '1rem', border: '2px dashed #e2e8f0', borderRadius: '16px', background: '#f8fafc' }} />
-              </FormGroup>
-              
-              {!projectId && (
-                <FormGroup label="الربط بمشروع استثماري">
-                  <select name="projectId" required style={inputStyle}>
-                    <option value="">اختر المشروع...</option>
-                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+      {/* Premium Upload Modal */}
+      <AnimatePresence>
+        {showUploadModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1500, padding: '1rem' }}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{ background: 'white', padding: '3.5rem', borderRadius: '40px', width: '100%', maxWidth: '500px', boxShadow: '0 50px 100px rgba(0,0,0,0.2)', position: 'relative' }}
+            >
+              <button 
+                onClick={() => setShowUploadModal(false)} 
+                style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', width: '45px', height: '45px', borderRadius: '50%', background: '#f1f5f9', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', transition: 'all 0.2s' }}
+                className="close-btn-hover"
+              >
+                <X size={24} />
+              </button>
+
+              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: '#064e3b10', color: '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                  <Upload size={36} />
+                </div>
+                <h3 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a' }}>رفع مستند جديد 📄</h3>
+                <p style={{ opacity: 0.5, fontWeight: 700 }}>قم برفع النسخة الأصلية للمستند لضمان توثيقه.</p>
+              </div>
+
+              <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  <label style={{ fontWeight: 800, fontSize: '0.95rem', color: '#475569' }}>الملف المرفق</label>
+                  <input type="file" name="file" required style={{ padding: '1.5rem', border: '3px dashed #e2e8f0', borderRadius: '20px', background: '#f8fafc', fontWeight: 600, cursor: 'pointer' }} />
+                </div>
+                
+                {!projectId && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <label style={{ fontWeight: 800, fontSize: '0.95rem', color: '#475569' }}>الربط بمشروع استثماري</label>
+                    <select name="projectId" required style={{ padding: '1.1rem 1.4rem', borderRadius: '18px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' }}>
+                      <option value="">اختر المشروع...</option>
+                      {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  <label style={{ fontWeight: 800, fontSize: '0.95rem', color: '#475569' }}>تصنيف المستند</label>
+                  <select name="type" required style={{ padding: '1.1rem 1.4rem', borderRadius: '18px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' }}>
+                    <option value="OFFICIAL_TRANSFER">حوالة سداد رسمية للهيئة 🏛️</option>
+                    <option value="INTERNAL_RECEIPT">إيصال تجميع داخلي 👥</option>
+                    <option value="MAP">خريطة / مخطط هندسي 🗺️</option>
+                    <option value="FORM">عقد / نموذج رسمي 📝</option>
                   </select>
-                </FormGroup>
-              )}
+                </div>
 
-              <FormGroup label="تصنيف المستند المالي/الرسمي">
-                <select name="type" required style={inputStyle}>
-                  <option value="OFFICIAL_TRANSFER">حوالة سداد رسمية للهيئة 🏛️</option>
-                  <option value="INTERNAL_RECEIPT">إيصال تجميع داخلي من الشركاء 👥</option>
-                  <option value="MAP">خريطة / مخطط هندسي 🗺️</option>
-                  <option value="FORM">عقد / نموذج رسمي 📝</option>
-                </select>
-              </FormGroup>
+                <Button type="submit" disabled={uploading} style={{ height: '4.5rem', borderRadius: '22px', background: '#064e3b', color: 'white', fontWeight: 900, fontSize: '1.2rem', marginTop: '1.5rem', boxShadow: '0 10px 25px rgba(6, 78, 59, 0.2)' }}>
+                  {uploading ? <Loader2 className="animate-spin" /> : 'تأكيد وحفظ المستند'}
+                </Button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
-              <Button type="submit" disabled={uploading} style={{ height: '3.5rem', borderRadius: '16px' }}>
-                {uploading ? <Loader2 className="animate-spin" /> : 'تأكيد وحفظ المستند'}
-              </Button>
-            </form>
-          </Card>
-        </div>
-      )}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .close-btn-hover:hover { background: #fee2e2 !important; color: #ef4444 !important; transform: rotate(90deg); }
+      `}} />
     </div>
   );
 }

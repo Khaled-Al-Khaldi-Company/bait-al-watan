@@ -176,7 +176,7 @@ export default function FinancesPage() {
     t.purpose?.includes('[') || 
     t.purpose?.includes('مناقلة') || 
     t.purpose?.includes('رصيد افتتاح') || 
-    t.purpose?.includes('فتح محفظة') ||
+    // We removed 'فتح محفظة' from here because these are the transfers we want to track
     t.type === 'FUND_REALLOCATION';
 
   const totalAuthorityPaid = transactions
@@ -189,7 +189,7 @@ export default function FinancesPage() {
 
   // مبالغ تحويل السيولة لمحافظ الهيئة (LIQUIDITY_TRANSFER) — مبالغ صادرة (سالبة)
   const totalLiquidityTransferred = transactions
-    .filter((t: any) => t.type === 'LIQUIDITY_TRANSFER' && t.amount < 0 && !isInternalMove(t))
+    .filter((t: any) => (t.type === 'LIQUIDITY_TRANSFER' || t.type === 'AUTHORITY_PAYMENT') && t.amount < 0 && !isInternalMove(t))
     .reduce((sum: number, t: any) => sum + Math.abs(t.amount), 0);
 
   // رصيد محفظة الهيئة = ما حوّل إليها − ما تم الاعتراف به رسمياً
@@ -209,206 +209,242 @@ export default function FinancesPage() {
   if (loading) return <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Loader2 className="animate-spin" size={40} color="#064e3b" /></div>;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f0f4f8', direction: 'rtl' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
       <Sidebar />
-      <main className="main-content-layout" style={{ flex: 1, padding: '2.5rem' }}>
-        <header style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <main style={{ flex: 1, padding: '2.5rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+        <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
-            <div onClick={() => window.history.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', opacity: 0.6, marginBottom: '0.75rem' }}>
-              العودة للصفحة السابقة <ChevronLeft size={14} />
+            <div onClick={() => window.history.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#64748b', fontWeight: 700, marginBottom: '0.8rem' }}>
+              <ChevronLeft size={16} /> العودة للوحة التحكم
             </div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>الإدارة المالية المركزية</h1>
-            <p style={{ opacity: 0.7 }}>متابعة السيولة، المصاريف الإدارية، وسداد الهيئة.</p>
+            <h1 style={{ fontSize: '2.8rem', fontWeight: 900, color: '#0f172a' }}>الإدارة المالية المركزية 🏦</h1>
+            <p style={{ opacity: 0.6, fontSize: '1.1rem', fontWeight: 600 }}>الرؤية الشاملة للسيولة، المحافظ، والعمليات المالية للمجموعة.</p>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             {!isViewer && (
               <>
-                <Button onClick={() => setShowTransferModal(true)} variant="secondary" style={{ height: '3.5rem', padding: '0 2rem', background: '#f8fafc', border: '2px solid #064e3b', color: '#064e3b' }}>
-                  <Activity size={18} /> مناقلة سيولة ذكية
+                <Button onClick={() => setShowTransferModal(true)} variant="secondary" style={{ height: '3.8rem', borderRadius: '18px', padding: '0 2rem', background: 'white', border: '2px solid #064e3b', color: '#064e3b', fontWeight: 800 }}>
+                  <Activity size={20} /> مناقلة سيولة ذكية
                 </Button>
-                <Button onClick={() => setShowModal(true)} style={{ height: '3.5rem', padding: '0 2rem' }}>
-                  <Plus size={18} /> تسجيل حركة مالية
+                <Button onClick={() => setShowModal(true)} style={{ height: '3.8rem', borderRadius: '18px', padding: '0 2rem', background: '#064e3b', color: 'white', fontWeight: 800, boxShadow: '0 10px 20px rgba(6, 78, 59, 0.15)' }}>
+                  <Plus size={20} /> تسجيل حركة مالية
                 </Button>
               </>
             )}
           </div>
         </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.2rem', marginBottom: '2.5rem' }}>
-        <StatCard title="إجمالي مساهمات الشركاء 💼" value={`$${totalContributions.toLocaleString()}`} icon={<Users color="#064e3b" />} color="#064e3b" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+        <StatCard title="إجمالي مساهمات الشركاء" value={`$${totalContributions.toLocaleString()}`} icon={<Users size={24} />} color="#064e3b" />
         <StatCard 
-          title="رصيد الصندوق (كاش فعلي) 💵" 
+          title="رصيد الصندوق (كاش فعلي)" 
           value={`$${cashBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`} 
-          icon={<Wallet color="#10b981" />} 
+          icon={<Wallet size={24} />} 
           color="#10b981"
-          note="بعد خصم المحولات والمصروفات" 
+          note="السيولة المتاحة حالياً بالصندوق" 
         />
         <StatCard 
-          title="محوّل لمحفظة الهيئة 🏛️" 
+          title="محوّل لمحفظة الهيئة" 
           value={`$${totalLiquidityTransferred.toLocaleString()}`} 
-          icon={<Landmark color="#3b82f6" />} 
+          icon={<Landmark size={24} />} 
           color="#3b82f6"
-          note="مبالغ محولة من الصندوق" 
+          note="إجمالي ما تم سداده للهيئة" 
         />
         <StatCard 
-          title="رصيد محفظة الهيئة (متبقٍ) 🏦" 
+          title="رصيد محفظة الهيئة (متبقٍ)" 
           value={`$${authorityWalletBalance.toLocaleString()}`} 
-          icon={<Building2 size={20} />} 
+          icon={<Building2 size={24} />} 
           color="#7c3aed"
-          note="المحوّل − المعترف به رسمياً" 
+          note="رصيد معلق لم يعترف به بعد" 
         />
-        <StatCard title="المعترف به رسمياً ✅" value={`$${totalRecognized.toLocaleString()}`} icon={<CheckCircle2 size={20} />} color="#059669" />
-        <StatCard title="المصاريف التشغيلية" value={`$${totalOperationalExpenses.toLocaleString()}`} icon={<CreditCard color="#f59e0b" />} color="#f59e0b" />
       </div>
 
-      <Card style={{ padding: '2rem' }}>
-        <h3 style={{ marginBottom: '2rem', fontSize: '1.4rem', fontWeight: 800 }}>سجل العمليات المالية الشامل</h3>
+      <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+          <h3 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f172a' }}>سجل العمليات المالية الشامل 📊</h3>
+          <div style={{ padding: '0.6rem 1.2rem', borderRadius: '12px', background: '#f8fafc', border: '1px solid #f1f5f9', fontWeight: 700, color: '#64748b', fontSize: '0.9rem' }}>
+             إجمالي العمليات: {transactions.length}
+          </div>
+        </div>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0.8rem' }}>
             <thead>
-              <tr style={{ textAlign: 'right', borderBottom: '2px solid #f1f5f9', opacity: 0.6, fontSize: '0.9rem' }}>
-                <th style={{ padding: '1rem' }}>التاريخ</th>
-                <th style={{ padding: '1rem' }}>النوع</th>
-                <th style={{ padding: '1rem' }}>المشروع</th>
-                <th style={{ padding: '1rem' }}>البيان</th>
-                <th style={{ padding: '1rem' }}>المبلغ</th>
-                <th style={{ padding: '1rem' }}>الإجراءات</th>
+              <tr style={{ textAlign: 'right', opacity: 0.4, fontSize: '0.85rem', fontWeight: 800, color: '#475569' }}>
+                <th style={{ padding: '0 1rem' }}>التاريخ</th>
+                <th style={{ padding: '0 1rem' }}>النوع</th>
+                <th style={{ padding: '0 1rem' }}>المشروع</th>
+                <th style={{ padding: '0 1rem' }}>البيان</th>
+                <th style={{ padding: '0 1rem' }}>المبلغ</th>
+                <th style={{ padding: '0 1rem' }}>الإجراءات</th>
               </tr>
             </thead>
             <tbody>
               {transactions.map((t: any) => {
-                const diff = t.amount - (t.officialAmount || t.amount);
+                const isPositive = t.amount > 0;
                 return (
-                  <tr key={t.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '1rem' }}>{new Date(t.date).toLocaleDateString('ar-EG')}</td>
-                    <td style={{ padding: '1rem' }}>
+                  <tr key={t.id} style={{ background: '#f8fafc', borderRadius: '16px', transition: 'transform 0.2s' }} className="table-row-hover">
+                    <td style={{ padding: '1.2rem 1rem', fontWeight: 700, borderRadius: '16px 0 0 16px' }}>{new Date(t.date).toLocaleDateString('ar-EG')}</td>
+                    <td style={{ padding: '1.2rem 1rem' }}>
                        <span style={{ 
-                         fontSize: '0.75rem', padding: '0.3rem 0.6rem', borderRadius: '1rem',
+                         fontSize: '0.75rem', padding: '0.4rem 0.8rem', borderRadius: '10px',
                          background: t.type === 'MEMBER_CONTRIBUTION' ? '#dcfce7' : (t.type === 'OTHER_EXPENSE' ? '#fef3c7' : '#fee2e2'),
                          color: t.type === 'MEMBER_CONTRIBUTION' ? '#166534' : (t.type === 'OTHER_EXPENSE' ? '#92400e' : '#991b1b'),
-                         fontWeight: 700
+                         fontWeight: 900
                        }}>
                           {t.type === 'MEMBER_CONTRIBUTION' ? 'إيداع شريك' : (t.type === 'OTHER_EXPENSE' ? 'مصروفات' : 'سداد هيئة')}
                        </span>
                     </td>
-                    <td style={{ padding: '1rem' }}>{t.project?.name}</td>
-                    <td style={{ padding: '1rem' }}>{t.purpose}</td>
-                    <td style={{ padding: '1rem', fontWeight: 700 }}>${t.amount.toLocaleString()}</td>
-                    <td style={{ padding: '1rem' }}>
-                       <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <td style={{ padding: '1.2rem 1rem', fontWeight: 800, color: '#064e3b' }}>{t.project?.name}</td>
+                    <td style={{ padding: '1.2rem 1rem', color: '#475569', fontSize: '0.9rem', maxWidth: '300px' }}>{t.purpose}</td>
+                    <td style={{ padding: '1.2rem 1rem', fontWeight: 900, color: isPositive ? '#059669' : '#dc2626', fontSize: '1.1rem' }}>
+                      {isPositive ? '+' : ''}{t.amount.toLocaleString()}$
+                    </td>
+                    <td style={{ padding: '1.2rem 1rem', borderRadius: '0 16px 16px 0' }}>
+                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                           {!isViewer ? (
                             <>
-                              <button onClick={() => handleOpenEdit(t)} style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer' }}><Edit size={18} /></button>
-                              <button onClick={() => handleDeleteTransaction(t.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
+                              <button onClick={() => handleOpenEdit(t)} style={{ width: '36px', height: '36px', borderRadius: '10px', border: 'none', background: 'white', color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}><Edit size={16} /></button>
+                              <button onClick={() => handleDeleteTransaction(t.id)} style={{ width: '36px', height: '36px', borderRadius: '10px', border: 'none', background: 'white', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}><Trash2 size={16} /></button>
                             </>
                           ) : (
-                            <span style={{ opacity: 0.3, fontSize: '0.8rem' }}>للعرض فقط</span>
+                            <Eye size={18} style={{ opacity: 0.2 }} />
                           )}
                        </div>
                     </td>
                   </tr>
                 );
               })}
-              {transactions.length === 0 && (
-                <tr><td colSpan={6} style={{ padding: '4rem', textAlign: 'center', opacity: 0.4 }}>لا توجد عمليات مسجلة حالياً.</td></tr>
-              )}
             </tbody>
           </table>
         </div>
       </Card>
 
-      {/* Transfer Modal */}
-      {showTransferModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101, backdropFilter: 'blur(8px)' }}>
-          <Card style={{ width: '100%', maxWidth: '500px', padding: '2.5rem', borderRadius: '32px', position: 'relative' }}>
-            <button onClick={() => setShowTransferModal(false)} style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer' }}><X size={20} /></button>
-            <h3 style={{ marginBottom: '1.3rem', textAlign: 'center', fontWeight: 900, fontSize: '1.6rem' }}>مناقلة سيولة ذكية 🔄</h3>
-            <p style={{ textAlign: 'center', opacity: 0.6, fontSize: '0.9rem', marginBottom: '2rem' }}>سيتم توزيع المبلغ تلقائياً على الشركاء حسب نسبهم.</p>
-            <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 700 }}>من مشروع (المصدر)</label>
-                <select name="sourceProjectId" required style={inputStyle}>
-                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 700 }}>إلى مشروع (الوجهة)</label>
-                <select name="targetProjectId" required style={inputStyle}>
-                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 700 }}>المبلغ المراد تحويله ($)</label>
-                <input type="number" name="amount" step="0.01" required style={inputStyle} placeholder="0.00" />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 700 }}>البيان / السبب</label>
-                <input type="text" name="purpose" required style={inputStyle} placeholder="مثال: تمويل بداية الإنشاءات..." />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 700 }}>التاريخ</label>
-                <input type="date" name="date" required defaultValue={new Date().toISOString().split('T')[0]} style={inputStyle} />
-              </div>
-              <Button type="submit" disabled={submitting} style={{ height: '4rem', borderRadius: '18px', fontSize: '1.1rem', fontWeight: 800, marginTop: '1rem' }}>
-                {submitting ? <Loader2 className="animate-spin" /> : 'تنفيذ المناقلة الذكية'}
-              </Button>
-            </form>
-          </Card>
-        </div>
-      )}
+      {/* Modern Modals */}
+      <AnimatePresence>
+        {(showModal || showTransferModal) && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{ background: 'white', padding: '3rem', borderRadius: '40px', width: '100%', maxWidth: '550px', boxShadow: '0 50px 100px rgba(0,0,0,0.2)', position: 'relative' }}
+            >
+              <button 
+                onClick={showTransferModal ? () => setShowTransferModal(false) : handleCloseModal} 
+                style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', width: '45px', height: '45px', borderRadius: '50%', background: '#f1f5f9', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', transition: 'all 0.2s' }}
+                className="close-btn-hover"
+              >
+                <X size={24} />
+              </button>
 
-      {/* Modal */}
-      {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, backdropFilter: 'blur(4px)' }}>
-          <Card style={{ width: '100%', maxWidth: '450px', position: 'relative', padding: '2rem' }}>
-            <button onClick={handleCloseModal} style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
-            <h3 style={{ marginBottom: '2rem', textAlign: 'center', fontWeight: 800 }}>{selectedTransaction ? 'تعديل عملية مالية' : 'تسجيل عملية مالية جديدة'}</h3>
-            <form onSubmit={handleSubmitTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 600 }}>المشروع المرتبط</label>
-                <select name="projectId" defaultValue={selectedTransaction?.projectId} required style={inputStyle}>
-                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 600 }}>نوع العملية</label>
-                <select name="type" defaultValue={selectedTransaction?.type} required style={inputStyle}>
-                  <option value="AUTHORITY_PAYMENT">سداد قسط للهيئة 🏛️</option>
-                  <option value="OTHER_EXPENSE">مصروفات إدارية / عمولات 📦</option>
-                  <option value="MEMBER_CONTRIBUTION">إيداع شريك 👤</option>
-                </select>
-              </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                   <label style={{ fontWeight: 600 }}>بالريال (SAR)</label>
-                   <input type="number" step="0.01" value={sarAmount} onChange={(e) => handleSarChange(e.target.value)} style={inputStyle} placeholder="0.00" />
-                 </div>
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                   <label style={{ fontWeight: 600 }}>بالدولار ($)</label>
-                   <input type="number" name="amount" step="0.01" value={usdAmount} onChange={(e) => handleUsdChange(e.target.value)} required style={inputStyle} placeholder="0.00" />
-                 </div>
-              </div>
+              {showTransferModal ? (
+                <>
+                  <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                    <div style={{ width: '70px', height: '70px', borderRadius: '22px', background: '#064e3b10', color: '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                      <Activity size={32} />
+                    </div>
+                    <h3 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0f172a' }}>مناقلة سيولة ذكية 🔄</h3>
+                    <p style={{ opacity: 0.5, fontWeight: 600 }}>نقل الأرصدة بين المشاريع وتوزيعها آلياً على الشركاء.</p>
+                  </div>
+                  <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
+                      <div style={formGroup}>
+                        <label style={formLabel}>من مشروع (المصدر)</label>
+                        <select name="sourceProjectId" required style={formInput}>
+                          {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                      </div>
+                      <div style={formGroup}>
+                        <label style={formLabel}>إلى مشروع (الوجهة)</label>
+                        <select name="targetProjectId" required style={formInput}>
+                          {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div style={formGroup}>
+                      <label style={formLabel}>المبلغ المراد تحويله ($)</label>
+                      <input type="number" name="amount" step="0.01" required style={formInput} placeholder="0.00" />
+                    </div>
+                    <div style={formGroup}>
+                      <label style={formLabel}>البيان / السبب</label>
+                      <input type="text" name="purpose" required style={formInput} placeholder="مثال: تمويل بداية الإنشاءات..." />
+                    </div>
+                    <div style={formGroup}>
+                      <label style={formLabel}>التاريخ</label>
+                      <input type="date" name="date" required defaultValue={new Date().toISOString().split('T')[0]} style={formInput} />
+                    </div>
+                    <Button type="submit" disabled={submitting} style={{ height: '4rem', borderRadius: '20px', fontSize: '1.1rem', fontWeight: 800, marginTop: '1rem', background: '#064e3b', color: 'white' }}>
+                      {submitting ? <Loader2 className="animate-spin" /> : 'تنفيذ المناقلة الذكية'}
+                    </Button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                    <div style={{ width: '70px', height: '70px', borderRadius: '22px', background: '#064e3b10', color: '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                      <Landmark size={32} />
+                    </div>
+                    <h3 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0f172a' }}>{selectedTransaction ? 'تعديل عملية مالية' : 'تسجيل حركة مالية'}</h3>
+                    <p style={{ opacity: 0.5, fontWeight: 600 }}>أدخل تفاصيل العملية المالية لضمان دقة التقارير.</p>
+                  </div>
+                  <form onSubmit={handleSubmitTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                    <div style={formGroup}>
+                      <label style={formLabel}>المشروع المرتبط</label>
+                      <select name="projectId" defaultValue={selectedTransaction?.projectId} required style={formInput}>
+                        {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      </select>
+                    </div>
+                    <div style={formGroup}>
+                      <label style={formLabel}>نوع العملية</label>
+                      <select name="type" defaultValue={selectedTransaction?.type} required style={formInput}>
+                        <option value="AUTHORITY_PAYMENT">سداد قسط للهيئة 🏛️</option>
+                        <option value="OTHER_EXPENSE">مصروفات إدارية / عمولات 📦</option>
+                        <option value="MEMBER_CONTRIBUTION">إيداع شريك 👤</option>
+                        <option value="LIQUIDITY_TRANSFER">تحويل سيولة لمحفظة الهيئة 🏦</option>
+                      </select>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
+                       <div style={formGroup}>
+                         <label style={formLabel}>بالريال (SAR)</label>
+                         <input type="number" step="0.01" value={sarAmount} onChange={(e) => handleSarChange(e.target.value)} style={formInput} placeholder="0.00" />
+                       </div>
+                       <div style={formGroup}>
+                         <label style={formLabel}>بالدولار ($)</label>
+                         <input type="number" name="amount" step="0.01" value={usdAmount} onChange={(e) => handleUsdChange(e.target.value)} required style={formInput} placeholder="0.00" />
+                       </div>
+                    </div>
+      
+                    <div style={formGroup}>
+                      <label style={formLabel}>المبلغ المعترف به رسمياً ($)</label>
+                      <input type="number" name="officialAmount" defaultValue={selectedTransaction?.officialAmount} style={formInput} placeholder="مثال: القيمة بدون عمولة البنك" />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
+                      <div style={formGroup}>
+                        <label style={formLabel}>التاريخ</label>
+                        <input type="date" name="date" required defaultValue={selectedTransaction?.date ? new Date(selectedTransaction.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} style={formInput} />
+                      </div>
+                      <div style={formGroup}>
+                        <label style={formLabel}>البيان</label>
+                        <input type="text" name="purpose" defaultValue={selectedTransaction?.purpose} required style={formInput} placeholder="الغرض..." />
+                      </div>
+                    </div>
+                    <Button type="submit" disabled={submitting} style={{ height: '4rem', borderRadius: '20px', background: '#064e3b', color: 'white', fontWeight: 800, fontSize: '1.1rem', marginTop: '1rem' }}>
+                      {submitting ? <Loader2 className="animate-spin" /> : 'تأكيد وحفظ البيانات'}
+                    </Button>
+                  </form>
+                </>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 600 }}>المبلغ المعترف به رسمياً ($)</label>
-                <input type="number" name="officialAmount" defaultValue={selectedTransaction?.officialAmount} style={inputStyle} placeholder="مثال: القيمة بدون عمولة البنك" />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 600 }}>التاريخ</label>
-                <input type="date" name="date" required defaultValue={selectedTransaction?.date ? new Date(selectedTransaction.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} style={inputStyle} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 600 }}>البيان</label>
-                <input type="text" name="purpose" defaultValue={selectedTransaction?.purpose} required style={inputStyle} placeholder="الغرض من الصرف..." />
-              </div>
-              <Button type="submit" disabled={submitting} style={{ height: '3.5rem', marginTop: '1rem' }}>
-                {submitting ? <Loader2 className="animate-spin" /> : 'تأكيد وحفظ البيانات'}
-              </Button>
-            </form>
-          </Card>
-        </div>
-      )}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .table-row-hover:hover { transform: scale(1.01); background: #f1f5f9 !important; }
+        .close-btn-hover:hover { background: #fee2e2 !important; color: #ef4444 !important; transform: rotate(90deg); }
+      `}} />
       </main>
     </div>
   );
@@ -416,19 +452,27 @@ export default function FinancesPage() {
 
 function StatCard({ title, value, icon, color, note }: { title: string, value: string, icon: any, color: string, note?: string }) {
   return (
-    <div style={{ background: 'white', borderRadius: '18px', padding: '1.4rem', boxShadow: '0 2px 10px rgba(0,0,0,0.04)', borderBottom: `4px solid ${color}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <motion.div 
+      whileHover={{ y: -5 }}
+      style={{ background: 'white', borderRadius: '24px', padding: '1.8rem', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', borderBottom: `5px solid ${color}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
+    >
       <div>
-        <p style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '0.4rem', fontWeight: 600 }}>{title}</p>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, color: '#0f172a' }}>{value}</h2>
-        {note && <p style={{ fontSize: '0.7rem', color, fontWeight: 600, marginTop: '0.3rem', opacity: 0.8 }}>{note}</p>}
+        <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem', fontWeight: 700 }}>{title}</p>
+        <h2 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0, color: '#0f172a' }}>{value}</h2>
+        {note && <p style={{ fontSize: '0.75rem', color, fontWeight: 700, marginTop: '0.5rem', opacity: 0.8 }}>{note}</p>}
       </div>
-      <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: `${color}10`, color: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         {icon}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-const inputStyle = { padding: '0.85rem', borderRadius: 'var(--radius)', border: '1px solid #e2e8f0', background: 'white', outline: 'none' };
+const formGroup = { display: 'flex', flexDirection: 'column' as const, gap: '0.6rem' };
+const formLabel = { fontWeight: 800, fontSize: '0.9rem', color: '#475569' };
+const formInput = { 
+  padding: '1rem 1.2rem', borderRadius: '16px', border: '1px solid #e2e8f0', background: '#f8fafc',
+  fontSize: '1rem', fontWeight: 600, outline: 'none', transition: 'all 0.2s', width: '100%'
+};
 
 
