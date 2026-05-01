@@ -184,7 +184,7 @@ export default function ProjectDetailsPage() {
   );
 
   if (!project) return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', gap: '1rem' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', background: '#f8fafc', gap: '1rem' }}>
       <h2 style={{ fontSize: '2rem', fontWeight: 900 }}>الحجز غير موجود ⚠️</h2>
       <Button onClick={() => router.push('/dashboard/projects')}>العودة لسجل الحجوزات</Button>
     </div>
@@ -315,7 +315,7 @@ export default function ProjectDetailsPage() {
           {showAddPartner && (
             <Modal onClose={() => setShowAddPartner(false)}>
               <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '2rem' }}>إضافة شريك للحجز</h2>
-              <form onSubmit={handleAddPartner} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <form onSubmit={handleAddPartner} style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.5rem' }}>
                 <div style={formGroup}>
                   <label style={formLabel}>اختر الشريك</label>
                   <select name="userId" required style={formInput}>
@@ -343,7 +343,7 @@ export default function ProjectDetailsPage() {
           {showAddTransaction && (
             <Modal onClose={() => setShowAddTransaction(false)} maxWidth="650px">
               <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '2rem' }}>تسجيل عملية مالية جديدة</h2>
-              <form onSubmit={handleAddTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              <form onSubmit={handleAddTransaction} style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.2rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                    <div style={formGroup}>
                       <label style={formLabel}>نوع العملية</label>
@@ -513,7 +513,7 @@ function OverviewTab({ project, progress }: any) {
            <Badge style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>إنجاز {Math.round(progress)}%</Badge>
         </div>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', position: 'relative' }}>
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.5rem', position: 'relative' }}>
           <motion.div whileHover={{ scale: 1.02 }} style={{ background: 'rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '20px' }}>
             <p style={{ opacity: 0.6, fontSize: '0.9rem', marginBottom: '0.5rem' }}>القيمة الكلية بالدولار</p>
             <p dir="ltr" style={{ fontSize: '2rem', fontWeight: 900, textAlign: 'right' }}>${(project.totalValue || 0).toLocaleString()}</p>
@@ -565,7 +565,7 @@ function PartnersTab({ project, onAdd, onDelete }: any) {
               <h4 style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.2rem' }}>{p.user?.name}</h4>
               <p dir="ltr" style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>${amount.toLocaleString()}</p>
             </div>
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' as const, alignItems: 'flex-end', gap: '0.5rem' }}>
               <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#064e3b' }}>{percentage}%</div>
               {isAdmin && (
                 <button onClick={() => onDelete(p.id)} style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '0.2rem' }}>
@@ -586,7 +586,7 @@ function TimelineTab({ project }: any) {
       <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '3rem' }}>المراحل التشغيلية</h3>
       <div style={{ position: 'relative', paddingLeft: '2rem' }}>
         <div style={{ position: 'absolute', right: '1.5rem', top: 0, bottom: 0, width: '2px', background: '#e2e8f0' }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '2rem' }}>
           {project.phases?.map((phase: any, idx: number) => (
             <motion.div 
               key={phase.id}
@@ -715,7 +715,7 @@ function DocumentsTab({ project }: any) {
             whileHover={{ y: -10, boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}
             style={{ 
               padding: '1.5rem', borderRadius: '24px', background: '#f8fafc', border: '1px solid #e2e8f0',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem',
+              display: 'flex', flexDirection: 'column' as const, alignItems: 'center', textAlign: 'center', gap: '1rem',
               position: 'relative', cursor: 'pointer', transition: 'all 0.2s'
             }}
           >
@@ -746,7 +746,7 @@ function SettingsTab({ project, onSubmit, onDelete, submitting }: any) {
     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
       <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
         <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem' }}>تعديل بيانات الحجز</h3>
-        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
             <div style={formGroup}>
               <label style={formLabel}>اسم الحجز</label>
