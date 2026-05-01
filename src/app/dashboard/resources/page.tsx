@@ -103,7 +103,8 @@ export default function ResourcesPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
       <Sidebar />
-      <main style={{ flex: 1, padding: '2.5rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+      <main style={{ flex: 1, padding: '2.5rem', overflowY: 'auto', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', maxWidth: '1100px' }}>
         <header style={{ marginBottom: '3.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
             <div onClick={() => window.history.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#64748b', fontWeight: 700, marginBottom: '0.8rem' }}>
@@ -254,6 +255,7 @@ export default function ResourcesPage() {
           .link-btn-hover:hover { filter: brightness(0.95); transform: translateY(-2px); }
           .close-btn-hover:hover { background: #fee2e2 !important; color: #ef4444 !important; transform: rotate(90deg); }
         `}} />
+        </div>
       </main>
     </div>
   );

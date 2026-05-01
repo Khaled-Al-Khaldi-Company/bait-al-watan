@@ -91,7 +91,8 @@ export default function MembersPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
       <Sidebar />
-      <main style={{ flex: 1, padding: '2rem 3rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+      <main style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', maxWidth: '1200px' }}>
         
         {/* Modern Header */}
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
@@ -262,6 +263,7 @@ export default function MembersPage() {
         <style dangerouslySetInnerHTML={{ __html: `
           .close-btn-hover:hover { background: #fee2e2 !important; color: #ef4444 !important; transform: rotate(90deg); }
         `}} />
+        </div>
       </main>
     </div>
   );
