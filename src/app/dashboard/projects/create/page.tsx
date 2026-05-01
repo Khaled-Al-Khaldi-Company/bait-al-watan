@@ -44,6 +44,7 @@ export default function CreateReservationPage() {
     
     const body = {
       name: formData.get('name'),
+      description: formData.get('description'),
       reservationCode: formData.get('reservationCode'),
       phaseNumber: formData.get('phaseNumber'),
       neighborhood: formData.get('neighborhood'),
@@ -53,6 +54,10 @@ export default function CreateReservationPage() {
       reservationType: formData.get('reservationType'),
       bookingAccount: formData.get('bookingAccount'),
       totalValue: totalValue || 0,
+      reservationFee: parseFloat(formData.get('reservationFee') as string) || 0,
+      installmentValue: parseFloat(formData.get('installmentValue') as string) || 0,
+      installmentsCount: parseInt(formData.get('installmentsCount') as string) || 0,
+      startDate: formData.get('startDate'),
       exchangeRate: parseFloat(formData.get('exchangeRate') as string) || 3.75,
       status: formData.get('reservationType') === 'OFFICIAL' ? 'ALLOCATED' : 'UNDER_STUDY'
     };
@@ -205,6 +210,14 @@ export default function CreateReservationPage() {
                     <input name="reservationCode" required placeholder="ادخل كود الحجز (رقم الطلب)..." style={globalInputStyle} />
                  </FormGroup>
               </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', marginTop: '2rem' }}>
+                 <FormGroup label="تاريخ البدء" icon={<Calendar size={18} />}>
+                    <input name="startDate" type="date" style={globalInputStyle} />
+                 </FormGroup>
+                 <FormGroup label="وصف إضافي" icon={<Info size={18} />}>
+                    <input name="description" placeholder="ملاحظات إضافية عن الحجز..." style={globalInputStyle} />
+                 </FormGroup>
+              </div>
            </section>
 
            {/* Section 3: Plot Details */}
@@ -226,7 +239,7 @@ export default function CreateReservationPage() {
            {/* Section 4: Financial Foundation */}
            <section style={{ padding: '4rem', background: '#f8fafc', borderRadius: '45px', border: '1px solid #f1f5f9', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.02)' }}>
               <SectionHeader number="04" title="البيانات المالية والمساحية" subtitle="تحديد المساحة الإجمالية وسعر المتر المتفق عليه" />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.5fr', gap: '2.5rem', marginBottom: '3rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2.5rem', marginBottom: '3rem' }}>
                  <FormGroup label="مساحة الأرض (م2)" icon={<Layers size={18} />}>
                     <input 
                       name="plotArea" 
@@ -258,9 +271,21 @@ export default function CreateReservationPage() {
                        />
                        <div style={{ position: 'absolute', left: '1.5rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 900, color: '#064e3b', fontSize: '0.9rem' }}>USD</div>
                     </div>
-                    <p style={{ fontSize: '0.8rem', color: '#059669', fontWeight: 600, marginTop: '0.5rem' }}>حساب تلقائي: المساحة × سعر المتر</p>
                  </FormGroup>
               </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2.5rem', marginBottom: '3rem', borderTop: '1px solid #e2e8f0', paddingTop: '2.5rem' }}>
+                 <FormGroup label="رسوم الحجز ($)" icon={<DollarSign size={18} />}>
+                    <input name="reservationFee" type="number" placeholder="0.00" style={globalInputStyle} />
+                 </FormGroup>
+                 <FormGroup label="قيمة القسط ($)" icon={<DollarSign size={18} />}>
+                    <input name="installmentValue" type="number" placeholder="0.00" style={globalInputStyle} />
+                 </FormGroup>
+                 <FormGroup label="عدد الأقساط" icon={<Hash size={18} />}>
+                    <input name="installmentsCount" type="number" placeholder="0" style={globalInputStyle} />
+                 </FormGroup>
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '2.5rem' }}>
                  <FormGroup label="سعر صرف الدولار (SAR/$)" icon={<TrendingUp size={18} />}>
                     <input name="exchangeRate" type="number" step="0.01" value={exchangeRate} onChange={(e) => setExchangeRate(parseFloat(e.target.value))} style={{ ...globalInputStyle, background: 'white' }} />

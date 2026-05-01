@@ -119,7 +119,14 @@ export default function ManageReservations() {
       if (res.ok) {
         setEditingId(null);
         fetchData();
+        alert('تم تحديث بيانات الشريك بنجاح ✅');
+      } else {
+        const errorData = await res.json();
+        alert(`فشل التحديث: ${errorData.error || 'حدث خطأ غير معروف'}`);
       }
+    } catch (err: any) {
+      console.error(err);
+      alert('خطأ في الاتصال بالخادم');
     } finally {
       setSubmitting(false);
     }

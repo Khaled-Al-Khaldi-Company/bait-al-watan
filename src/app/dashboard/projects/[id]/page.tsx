@@ -121,9 +121,15 @@ export default function ProjectDetailsPage() {
         body: JSON.stringify(body)
       });
       if (res.ok) {
-        alert('تم تحديث البيانات بنجاح');
+        alert('تم تحديث البيانات بنجاح ✅');
         fetchProject();
+      } else {
+        const errorData = await res.json();
+        alert(`فشل التحديث: ${errorData.error || 'حدث خطأ غير معروف'}`);
       }
+    } catch (err: any) {
+      console.error(err);
+      alert('خطأ في الاتصال بالخادم');
     } finally {
       setSubmitting(false);
     }
@@ -751,6 +757,10 @@ function SettingsTab({ project, onSubmit, onDelete, submitting }: any) {
               <input name="location" defaultValue={project.location} style={inputStyle} />
             </div>
             <div style={formGroup}>
+              <label style={formLabel}>الوصف</label>
+              <input name="description" defaultValue={project.description} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
               <label style={formLabel}>الحي / المنطقة</label>
               <input name="neighborhood" defaultValue={project.neighborhood} style={inputStyle} />
             </div>
@@ -763,6 +773,18 @@ function SettingsTab({ project, onSubmit, onDelete, submitting }: any) {
               <input name="totalValue" type="number" defaultValue={project.totalValue} style={inputStyle} />
             </div>
             <div style={formGroup}>
+              <label style={formLabel}>رسوم الحجز ($)</label>
+              <input name="reservationFee" type="number" defaultValue={project.reservationFee} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>قيمة القسط ($)</label>
+              <input name="installmentValue" type="number" defaultValue={project.installmentValue} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>عدد الأقساط</label>
+              <input name="installmentsCount" type="number" defaultValue={project.installmentsCount} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
               <label style={formLabel}>مساحة الأرض (م²)</label>
               <input name="plotArea" type="number" defaultValue={project.plotArea} style={inputStyle} />
             </div>
@@ -773,6 +795,21 @@ function SettingsTab({ project, onSubmit, onDelete, submitting }: any) {
             <div style={formGroup}>
               <label style={formLabel}>رقم الحجز</label>
               <input name="reservationCode" defaultValue={project.reservationCode} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>تاريخ البدء</label>
+              <input name="startDate" type="date" defaultValue={project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : ''} style={inputStyle} />
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>نوع الحجز</label>
+              <select name="reservationType" defaultValue={project.reservationType} style={inputStyle}>
+                <option value="INITIAL">حجز مبدئي</option>
+                <option value="OFFICIAL">حجز رسمي</option>
+              </select>
+            </div>
+            <div style={formGroup}>
+              <label style={formLabel}>حساب الحجز</label>
+              <input name="bookingAccount" defaultValue={project.bookingAccount} style={inputStyle} placeholder="مثال: حساب 1 أو حساب 2" />
             </div>
             <div style={formGroup}>
               <label style={formLabel}>سعر الصرف المعتمد (SAR)</label>
@@ -859,9 +896,9 @@ const closeButton: any = {
   cursor: 'pointer'
 };
 
-const formGroup = { display: 'flex', flexDirection: 'column', gap: '0.5rem' };
-const formLabel = { fontWeight: 800, fontSize: '0.9rem', color: '#64748b' };
-const formInput = { padding: '1rem', borderRadius: '14px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' };
+const formGroup: any = { display: 'flex', flexDirection: 'column', gap: '0.5rem' };
+const formLabel: any = { fontWeight: 800, fontSize: '0.9rem', color: '#64748b' };
+const formInput: any = { padding: '1rem', borderRadius: '14px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' };
 
 function getStatusLabel(status: string) {
   const labels: any = { 'UNDER_STUDY': 'تحت الدراسة', 'SUBMITTED': 'تم التقديم', 'ALLOCATED': 'تم التخصيص', 'IN_PROGRESS': 'قيد التنفيذ', 'COMPLETED': 'مكتمل' };
@@ -882,48 +919,4 @@ function getPhaseColor(status: string) {
   const colors: any = { 'PENDING': '#94a3b8', 'ACTIVE': '#10b981', 'COMPLETED': '#059669' };
   return colors[status] || '#64748b';
 }
-5%',
-  maxWidth: '550px',
-  padding: '3rem',
-  borderRadius: '40px',
-  background: 'white',
-  position: 'relative',
-  boxShadow: '0 50px 100px rgba(0,0,0,0.4)',
-  animation: 'modalSlideIn 0.3s ease-out'
-};
 
-const closeButton: any = {
-  position: 'absolute',
-  top: '1.5rem',
-  left: '1.5rem',
-  background: '#f1f5f9',
-  border: 'none',
-  borderRadius: '50%',
-  width: '35px',
-  height: '35px',
-  cursor: 'pointer'
-};
-
-const formGroup = { display: 'flex', flexDirection: 'column', gap: '0.5rem' };
-const formLabel = { fontWeight: 800, fontSize: '0.9rem', color: '#64748b' };
-const formInput = { padding: '1rem', borderRadius: '14px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' };
-
-function getStatusLabel(status: string) {
-  const labels: any = { 'UNDER_STUDY': 'تحت الدراسة', 'SUBMITTED': 'تم التقديم', 'ALLOCATED': 'تم التخصيص', 'IN_PROGRESS': 'قيد التنفيذ', 'COMPLETED': 'مكتمل' };
-  return labels[status] || status;
-}
-
-function getStatusColor(status: string) {
-  const colors: any = { 'UNDER_STUDY': '#94a3b8', 'SUBMITTED': '#3b82f6', 'ALLOCATED': '#f59e0b', 'IN_PROGRESS': '#10b981', 'COMPLETED': '#059669' };
-  return colors[status] || '#64748b';
-}
-
-function getPhaseLabel(status: string) {
-  const labels: any = { 'PENDING': 'معلق', 'ACTIVE': 'جاري حالياً', 'COMPLETED': 'مكتمل' };
-  return labels[status] || status;
-}
-
-function getPhaseColor(status: string) {
-  const colors: any = { 'PENDING': '#94a3b8', 'ACTIVE': '#10b981', 'COMPLETED': '#059669' };
-  return colors[status] || '#64748b';
-}

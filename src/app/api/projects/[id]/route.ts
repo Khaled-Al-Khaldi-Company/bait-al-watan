@@ -1,4 +1,6 @@
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const revalidate = 0;
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from "@/lib/prisma";
 import { getServerSession } from 'next-auth';
@@ -81,20 +83,27 @@ export async function PATCH(
       data: {
         name: body.name,
         location: body.location,
+        description: body.description,
         status: body.status,
         totalValue: body.totalValue ? parseFloat(body.totalValue) : undefined,
+        reservationFee: body.reservationFee ? parseFloat(body.reservationFee) : undefined,
+        installmentValue: body.installmentValue ? parseFloat(body.installmentValue) : undefined,
+        installmentsCount: body.installmentsCount ? parseInt(body.installmentsCount) : undefined,
         plotArea: body.plotArea ? parseFloat(body.plotArea) : undefined,
         pricePerMeter: body.pricePerMeter ? parseFloat(body.pricePerMeter) : undefined,
         reservationCode: body.reservationCode,
         phaseNumber: body.phaseNumber,
         neighborhood: body.neighborhood,
+        reservationType: body.reservationType,
         bookingAccount: body.bookingAccount,
         exchangeRate: body.exchangeRate ? parseFloat(body.exchangeRate) : undefined,
+        startDate: (body.startDate && body.startDate !== "") ? new Date(body.startDate) : undefined,
       }
     });
 
     return NextResponse.json(updated);
   } catch (error: any) {
+    console.error('Update Project Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
