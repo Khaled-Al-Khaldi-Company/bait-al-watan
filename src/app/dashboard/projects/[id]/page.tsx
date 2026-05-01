@@ -176,12 +176,19 @@ export default function ProjectDetailsPage() {
     }
   };
 
-  const handleDeleteTransaction = async (transId: string) => {
+  const handleDeleteTransaction = async (txId: string) => {
     if (!confirm('هل أنت متأكد من حذف هذه العملية المالية؟')) return;
     try {
-      const res = await fetch(`/api/finances?id=${transId}`, { method: 'DELETE' });
-      if (res.ok) fetchProject();
-    } catch (err) { console.error(err); }
+      const res = await fetch(`/api/projects/${id}/transactions/${txId}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchProject();
+      } else {
+        const data = await res.json();
+        alert(`فشل حذف العملية: ${data.error || 'خطأ في الصلاحيات'}`);
+      }
+    } catch (err: any) {
+      alert(`خطأ في الاتصال: ${err.message}`);
+    }
   };
 
   if (loading) return (
