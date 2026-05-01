@@ -22,26 +22,33 @@ export async function GET(req: NextRequest) {
       const transactions = project.transactions || [];
       const obligations = project.obligations || [];
 
-      // 1. Current Liquidity (Total Inflow - Total Outflow)
-      const liquidity = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+      // 1. إجمالي مساهمات الشركاء (كل ما دخل من الشركاء)
+      const contributions = transactions
+        .filter(t => (t.type || '') === 'MEMBER_CONTRIBUTION' && (t.amount || 0) > 0)
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-      // 2. Paid to Authority (Official amount if available, else total amount)
-      const paidToAuth = transactions.filter((t: any) => 
-        ['AUTHORITY_PAYMENT', 'RESERVATION_FEE_PAYMENT', 'WALLET_OPENING_PAYMENT', 'INSTALLMENT_PAYMENT', 'ACTIVATION_TRANSFER', 'LIQUIDITY_TRANSFER'].includes(t.type || '')
-      ).reduce((sum: number, t: any) => {
-        // Special handling for transfers to avoid double counting if needed
-        // But here we want to see total recognized/paid value
-        return sum + Math.abs(t.officialAmount || 0);
-      }, 0);
+      // 2. إجمالي المبالغ المنصرفة (كل ما خرج: هيئة، رسوم، مصاريف، عمولات، أقساط)
+      const spent = transactions
+        .filter(t => (t.amount || 0) < 0)
+        .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
 
-      // 3. Due to Authority (Pending obligations)
-      const dueToAuth = obligations.filter(o => (o.status || '') !== 'COMPLETED').reduce((sum, o) => sum + (o.amount || 0), 0);
-      
-      // 4. Contributions (Direct member cash inflow)
-      const contributions = transactions.filter(t => (t.type || '') === 'MEMBER_CONTRIBUTION' && (t.amount || 0) > 0).reduce((sum, t) => sum + (t.amount || 0), 0);
-      
-      // 5. Expenses (Non-authority outflows)
-      const expenses = transactions.filter(t => (t.type || '') === 'OTHER_EXPENSE').reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
+      // 3. السيولة الحالية = المساهمات - المنصرف
+      const liquidity = contributions - spent;
+
+      // 4. سداد الهيئة (ما تم تحويله فعلياً للهيئة - القيمة الرسمية)
+      const paidToAuth = transactions
+        .filter(t => ['AUTHORITY_PAYMENT', 'RESERVATION_FEE_PAYMENT', 'WALLET_OPENING_PAYMENT', 'INSTALLMENT_PAYMENT', 'ACTIVATION_TRANSFER', 'LIQUIDITY_TRANSFER'].includes(t.type || ''))
+        .reduce((sum, t) => sum + Math.abs(t.officialAmount || 0), 0);
+
+      // 5. الالتزامات القادمة
+      const dueToAuth = obligations
+        .filter(o => (o.status || '') !== 'COMPLETED')
+        .reduce((sum, o) => sum + (o.amount || 0), 0);
+
+      // 6. المصاريف الأخرى (خارج بند الهيئة)
+      const expenses = transactions
+        .filter(t => (t.type || '') === 'OTHER_EXPENSE' || (t.type || '') === 'COMMISSION')
+        .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
 
       totalLiquidityUSD += liquidity;
       totalPaidToAuthorityUSD += paidToAuth;
@@ -56,7 +63,8 @@ export async function GET(req: NextRequest) {
         paidToAuth,
         dueToAuth,
         contributions,
-        expenses
+        expenses,
+        spent
       };
     });
 

@@ -35,30 +35,38 @@ export async function GET(req: NextRequest) {
     let totalExpenses = 0;            // مصاريف تشغيلية
     let totalRemainingToAuthority = 0;
 
+    let totalSpentAccumulated = 0;
+
     allProjects.forEach(project => {
       try {
         const transactions = project.transactions || [];
         const status = project.status || 'UNDER_STUDY';
 
-        // 1. مساهمات الشركاء
+        // 1. إجمالي مساهمات الشركاء (كل ما دخل من الشركاء)
         const contributions = transactions
-          .filter(t => t.type === 'MEMBER_CONTRIBUTION' && (t.amount || 0) > 0 && !isInternalMove(t))
+          .filter(t => (t.type || '') === 'MEMBER_CONTRIBUTION' && (t.amount || 0) > 0 && !isInternalMove(t))
           .reduce((sum, t) => sum + (t.amount || 0), 0);
         totalMemberContributions += contributions;
 
-        // 2. مدفوعات الهيئة المباشرة — مبالغ سالبة، أنواع الهيئة المباشرة
+        // 2. إجمالي المبالغ المنصرفة (كل ما خرج فعلياً من الصندوق)
+        const spent = transactions
+          .filter(t => (t.amount || 0) < 0 && !isInternalMove(t))
+          .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
+        totalSpentAccumulated += spent;
+
+        // 3. سداد الهيئة المباشر (للتفصيل فقط)
         const authorityDirect = transactions
           .filter(t => authorityDirectTypes.includes(t.type || '') && (t.amount || 0) < 0 && !isInternalMove(t))
           .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
         totalAuthorityDirect += authorityDirect;
 
-        // 3. تحويلات لمحفظة الهيئة (LIQUIDITY_TRANSFER + WALLET_OPENING_PAYMENT) — مبالغ سالبة
+        // 4. تحويلات المحفظة (للتفصيل فقط)
         const liquidityToWallet = transactions
           .filter(t => walletTransferTypes.includes(t.type || '') && (t.amount || 0) < 0 && !isInternalMove(t))
           .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
         totalLiquidityToWallet += liquidityToWallet;
 
-        // 4. المعترف به رسمياً (officialAmount في معاملات الهيئة + تحويلات المحفظة)
+        // 5. المعترف به رسمياً (officialAmount)
         const officialRecognized = transactions
           .filter(t =>
             (authorityDirectTypes.includes(t.type || '') || walletTransferTypes.includes(t.type || '')) &&
@@ -67,13 +75,13 @@ export async function GET(req: NextRequest) {
           .reduce((sum, t) => sum + Math.abs(t.officialAmount || 0), 0);
         totalOfficialRecognized += officialRecognized;
 
-        // 5. المصاريف التشغيلية
+        // 6. المصاريف والعمولات
         const expenses = transactions
-          .filter(t => t.type === 'OTHER_EXPENSE' && !isInternalMove(t))
+          .filter(t => ((t.type || '') === 'OTHER_EXPENSE' || (t.type || '') === 'COMMISSION') && !isInternalMove(t))
           .reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
         totalExpenses += expenses;
 
-        // 6. المتبقي (للمشاريع المخصصة فقط)
+        // 7. المتبقي للهيئة
         if (status === 'ALLOCATED') {
           const totalValue = project.totalValue || 0;
           const totalPaidForProject = authorityDirect + liquidityToWallet;
@@ -86,18 +94,12 @@ export async function GET(req: NextRequest) {
 
     // إجمالي ما ذهب للهيئة = مباشر + محوّل للمحفظة
     const totalPaidToAuthority = totalAuthorityDirect + totalLiquidityToWallet;
-
-    // ─── المعادلات الصحيحة ────────────────────────────────────────────────
-    // المعترف به رسمياً = officialAmount الإجمالي من كل معاملات الهيئة
     const officialPaid = totalOfficialRecognized;
-
-    // محفظة الهيئة (الرصيد المدين) = المعترف به رسمياً − المدفوع مباشرة للهيئة
-    // يعني: ما تم الاعتراف به عبر المحفظة فقط (ليس عبر الدفع المباشر)
     const authorityWalletBalance = Math.max(0, totalOfficialRecognized - totalAuthorityDirect);
 
-    // رصيد الصندوق (الكاش الفعلي) = مساهمات − معترف به رسمياً − مصاريف
-    // لأن "المعترف به رسمياً" هو ما خرج فعلاً من الصندوق وتم توثيقه لدى الهيئة
-    const cashBalance = totalMemberContributions - totalOfficialRecognized - totalExpenses;
+    // ─── المعادلات الصحيحة بناءً على طلب المستخدم ──────────────────────────
+    // إجمالي السيولة الحالية = إجمالي المساهمات - إجمالي كل ما تم صرفه
+    const cashBalance = totalMemberContributions - totalSpentAccumulated;
 
     return NextResponse.json({
       // للتوافق مع الكود القديم
