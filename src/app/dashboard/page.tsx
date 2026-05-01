@@ -38,6 +38,7 @@ export default function Dashboard() {
   const { data: session, status } = useSession();
   const [stats, setStats] = useState<any>(null);
   const [projects, setProjects] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -64,11 +65,13 @@ export default function Dashboard() {
     setLoading(true);
     Promise.all([
       fetch('/api/dashboard/stats').then(res => res.ok ? res.json() : null),
-      fetch('/api/projects').then(res => res.ok ? res.json() : [])
+      fetch('/api/projects').then(res => res.ok ? res.json() : []),
+      fetch('/api/dashboard/activities').then(res => res.ok ? res.json() : [])
     ])
-    .then(([statsData, projectsData]) => {
+    .then(([statsData, projectsData, activitiesData]) => {
       if (statsData) setStats(statsData);
       setProjects(projectsData || []);
+      setActivities(activitiesData || []);
     })
     .catch(err => {
       console.error('Dashboard Fetch Error:', err);
@@ -286,12 +289,19 @@ export default function Dashboard() {
              )}
 
              <motion.div variants={itemVariants}>
-               <Card style={{ padding: '1.5rem', borderRadius: '24px' }}>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.5rem' }}>تنبيهات الاستحقاق 🔔</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                     <NotificationItem title="موعد قسط التجمع الخامس" time="بعد يومين" color="#ef4444" />
-                     <NotificationItem title="تحديث مستندات الحي السادس" time="أمس" color="#3b82f6" />
-                     <NotificationItem title="عضو جديد انضم للجروب" time="منذ ساعة" color="#10b981" />
+               <Card style={{ padding: '1.5rem', borderRadius: '24px', minHeight: '400px' }}>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.5rem' }}>المسار الزمني للأنشطة 🔔</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                     {activities.map((act: any) => (
+                       <NotificationItem 
+                         key={act.id}
+                         title={act.title} 
+                         time={new Date(act.time).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} 
+                         color={act.color} 
+                         subtitle={act.subtitle}
+                       />
+                     ))}
+                     {activities.length === 0 && <p style={{ textAlign: 'center', opacity: 0.4, fontSize: '0.9rem', marginTop: '2rem' }}>لا توجد أنشطة حديثة.</p>}
                   </div>
                </Card>
              </motion.div>
@@ -389,17 +399,18 @@ function StatCard({ title, value, icon, color, trend, subtitle }: { title: strin
   );
 }
 
-function NotificationItem({ title, time, color }: { title: string, time: string, color: string }) {
+function NotificationItem({ title, time, color, subtitle }: { title: string, time: string, color: string, subtitle?: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.5rem 0' }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', padding: '0.5rem 0' }}>
        <motion.div 
          animate={{ scale: [1, 1.2, 1] }}
          transition={{ repeat: Infinity, duration: 2 }}
-         style={{ width: '8px', height: '8px', borderRadius: '50%', background: color }}
+         style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, marginTop: '0.5rem' }}
        />
        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{title}</div>
-          <div style={{ fontSize: '0.75rem', opacity: 0.5 }}>{time}</div>
+          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e293b' }}>{title}</div>
+          {subtitle && <div style={{ fontSize: '0.8rem', opacity: 0.6, marginBottom: '0.2rem' }}>{subtitle}</div>}
+          <div style={{ fontSize: '0.75rem', opacity: 0.4 }}>{time}</div>
        </div>
     </div>
   );
