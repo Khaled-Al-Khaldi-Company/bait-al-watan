@@ -316,7 +316,7 @@ export default function Dashboard() {
               <Card style={{ width: '100%', maxWidth: '500px', padding: '2.5rem', borderRadius: '32px', border: 'none', boxShadow: '0 40px 100px rgba(0,0,0,0.2)', position: 'relative' }}>
                 <button onClick={() => setShowAddModal(false)} style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer' }}><X size={20} /></button>
                 <h3 style={{ marginBottom: '2rem', textAlign: 'center', fontWeight: 900, fontSize: '1.8rem' }}>إضافة حجز أرض جديد</h3>
-                <form onSubmit={handleAddReservation} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <form onSubmit={handleAddReservation} style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.5rem' }}>
                   <FormGroup label="اسم الحجز (مثلاً: قطعة 110)">
                     <input name="name" required placeholder="ادخل رقم القطعة أو الاسم المميز..." style={inputStyle} />
                   </FormGroup>

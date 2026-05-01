@@ -375,6 +375,6 @@ const closeButton: any = {
   justifyContent: 'center'
 };
 
-const formGroup = { display: 'flex', flexDirection: 'column', gap: '0.6rem' };
+const formGroup = { display: 'flex', flexDirection: 'column' as const, gap: '0.6rem' };
 const formLabel = { fontWeight: 800, fontSize: '0.95rem', color: '#475569' };
 const formInput = { padding: '1.2rem', borderRadius: '18px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1.1rem', outline: 'none', fontWeight: 700 };

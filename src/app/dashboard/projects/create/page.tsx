@@ -93,7 +93,7 @@ export default function CreateReservationPage() {
     return (
       <div style={{ 
         height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-        background: 'white', flexDirection: 'column', gap: '2rem' 
+        background: 'white', flexDirection: 'column' as const, gap: '2rem' 
       }}>
          <div className="success-animation" style={{ 
            width: '120px', height: '120px', background: '#f0fdf4', 
@@ -168,7 +168,7 @@ export default function CreateReservationPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' as const, gap: '5rem' }}>
            
            {/* Section 1: Classification & Type */}
            <section style={{ padding: '3rem', background: '#f8fafc', borderRadius: '40px', border: '1px solid #f1f5f9' }}>
