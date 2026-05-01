@@ -753,7 +753,7 @@ function SettingsTab({ project, onSubmit, onDelete, submitting }: any) {
               <input name="name" defaultValue={project.name} style={inputStyle} required />
             </div>
             <div style={formGroup}>
-              <label style={formLabel}>الموقع</label>
+              <label style={formLabel}>موقع الحجز</label>
               <input name="location" defaultValue={project.location} style={inputStyle} />
             </div>
             <div style={formGroup}>
