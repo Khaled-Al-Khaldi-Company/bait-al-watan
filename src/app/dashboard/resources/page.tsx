@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button } from '@/components/ui';
 import { 
   ExternalLink, Plus, Trash2, Edit3, Link2, 
-  MessageCircle, Globe, Shield, Info, Loader2, X 
+  MessageCircle, Globe, Shield, Info, Loader2, X, ChevronLeft 
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';

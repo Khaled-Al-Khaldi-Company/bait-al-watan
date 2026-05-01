@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button } from '@/components/ui';
 import { File, Download, Upload, Search, Loader2, X, Eye, FileText, Map, ShieldCheck, MoreVertical, Trash2, ArrowUpRight, Landmark, Users } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DocumentExplorer({ projectId }: { projectId?: string }) {
   const { data: session } = useSession();
