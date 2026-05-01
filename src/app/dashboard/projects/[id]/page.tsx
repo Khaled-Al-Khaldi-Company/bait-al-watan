@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
+import DocumentExplorer from '@/components/DocumentExplorer';
 
 type TabType = 'overview' | 'partners' | 'timeline' | 'finances' | 'documents' | 'settings';
 
@@ -493,46 +494,103 @@ export default function ProjectDetailsPage() {
           )}
 
           {showTransferModal && (
-            <Modal onClose={() => setShowTransferModal(false)} maxWidth="500px">
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '1rem' }}>مناقلة سيولة ذكية 🔄</h2>
-              <p style={{ textAlign: 'center', opacity: 0.6, fontSize: '0.9rem', marginBottom: '2rem' }}>سيتم توزيع المبلغ تلقائياً على الشركاء في الوجهة حسب نسبهم في هذا المشروع.</p>
-              <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.2rem' }}>
-                <div style={formGroup}>
-                  <label style={formLabel}>إلى مشروع (الوجهة)</label>
-                  <select name="targetProjectId" required style={formInput}>
-                    <option value="">-- اختر المشروع الهدف --</option>
-                    {allProjects?.filter((p: any) => p.id !== id).map((p: any) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
+            <Modal onClose={() => setShowTransferModal(false)} maxWidth="600px">
+              <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                <div style={{ width: '70px', height: '70px', borderRadius: '22px', background: '#064e3b10', color: '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                  <Activity size={32} />
                 </div>
-                <div style={formGroup}>
-                  <label style={formLabel}>المبلغ المراد تحويله ($)</label>
-                  <input name="amount" type="number" step="0.01" required style={formInput} placeholder="0.00" />
+                <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a' }}>المناقلة الذكية للسيولة 🔄</h2>
+                <p style={{ opacity: 0.6, fontSize: '1rem', marginTop: '0.5rem' }}>نقل الأرصدة والسيولة بين المشاريع بذكاء وتوزيع آلي.</p>
+              </div>
+
+              <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
+                  <div style={formGroup}>
+                    <label style={formLabel}>إلى مشروع (الوجهة)</label>
+                    <select name="targetProjectId" required style={formInput}>
+                      <option value="">-- اختر المشروع --</option>
+                      {allProjects?.filter((p: any) => p.id !== id).map((p: any) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={formGroup}>
+                    <label style={formLabel}>المبلغ المراد تحويله ($)</label>
+                    <input 
+                      name="amount" 
+                      type="number" 
+                      step="0.01" 
+                      required 
+                      style={formInput} 
+                      placeholder="0.00" 
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value) || 0;
+                        (window as any)._tempTransferAmount = val;
+                        // Force a small re-render or update state if needed, but for now we can just show it
+                      }}
+                    />
+                  </div>
                 </div>
+
                 <div style={formGroup}>
                   <label style={formLabel}>نوع المناقلة</label>
-                  <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700 }}>
-                      <input type="radio" name="transferType" value="LIQUIDITY_TRANSFER" defaultChecked /> سيولة نقدية
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <label style={{ 
+                      padding: '1.2rem', borderRadius: '16px', border: '2px solid #f1f5f9', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 700, transition: 'all 0.2s'
+                    }} className="radio-card">
+                      <input type="radio" name="transferType" value="LIQUIDITY_TRANSFER" defaultChecked />
+                      <div>
+                        <div style={{ fontSize: '0.95rem' }}>سيولة نقدية</div>
+                        <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>نقل كاش فعلي</div>
+                      </div>
                     </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700 }}>
-                      <input type="radio" name="transferType" value="AUTHORITY_BALANCE" /> رصيد هيئة (افتراضي)
+                    <label style={{ 
+                      padding: '1.2rem', borderRadius: '16px', border: '2px solid #f1f5f9', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 700, transition: 'all 0.2s'
+                    }} className="radio-card">
+                      <input type="radio" name="transferType" value="AUTHORITY_BALANCE" />
+                      <div>
+                        <div style={{ fontSize: '0.95rem' }}>رصيد هيئة</div>
+                        <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>نقل دفتري بالهيئة</div>
+                      </div>
                     </label>
                   </div>
                 </div>
+
+                {/* Distribution Preview Section */}
+                <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 900, marginBottom: '1rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Users size={16} /> معاينة التوزيع على الشركاء
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxHeight: '150px', overflowY: 'auto' }}>
+                    {project.participations?.map((p: any) => (
+                      <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                        <span style={{ fontWeight: 700 }}>{p.user?.name}</span>
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                          <span style={{ opacity: 0.5 }}>{p.percentage}%</span>
+                          <span style={{ fontWeight: 900, color: '#064e3b' }}>
+                            ${((p.percentage / 100) * ((window as any)._tempTransferAmount || 0)).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div style={formGroup}>
                   <label style={formLabel}>البيان / السبب</label>
                   <input name="purpose" required style={formInput} placeholder="مثال: تمويل بداية الإنشاءات..." />
                 </div>
-                <div style={formGroup}>
-                  <label style={formLabel}>التاريخ</label>
-                  <input name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} style={formInput} />
-                </div>
-                <Button type="submit" disabled={submitting} style={{ height: '4rem', borderRadius: '18px', fontSize: '1.1rem', fontWeight: 800, marginTop: '1rem', background: '#064e3b', color: 'white' }}>
-                  {submitting ? <Loader2 className="animate-spin" /> : 'تنفيذ المناقلة الذكية'}
+
+                <Button type="submit" disabled={submitting} style={{ height: '4rem', borderRadius: '20px', fontSize: '1.1rem', fontWeight: 800, marginTop: '1rem', background: '#064e3b', color: 'white', boxShadow: '0 10px 25px rgba(6, 78, 59, 0.25)' }}>
+                  {submitting ? <Loader2 className="animate-spin" /> : 'تأكيد عملية المناقلة'}
                 </Button>
               </form>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .radio-card:has(input:checked) { border-color: #064e3b !important; background: #064e3b05 !important; }
+                .radio-card input { accent-color: #064e3b; width: 18px; height: 18px; }
+              `}} />
             </Modal>
           )}
         </AnimatePresence>
@@ -618,46 +676,87 @@ function CompactStat({ title, value, icon, color }: any) {
 // ─── Tabs Sections ──────────────────────────────────────────────────────────
 
 function OverviewTab({ project, progress }: any) {
+  const remaining = Math.max(0, (project.totalValue || 0) - (project.totalPaid || 0));
+  
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-      <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
-        <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem', color: '#0f172a' }}>البيانات الفنية</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-          <DataField label="المرحلة / الإصدار" value={project.phaseNumber || "-"} />
-          <DataField label="رقم الحجز" value={project.reservationCode || "-"} />
-          <DataField label="الحي / المنطقة" value={project.neighborhood || "-"} />
-          <DataField label="مساحة الأرض" value={project.plotArea ? `${project.plotArea} م²` : "-"} />
-          <DataField label="سعر المتر" value={project.pricePerMeter ? `$${project.pricePerMeter}` : "-"} />
-          <DataField label="حساب الحجز" value={project.bookingAccount || "-"} />
-        </div>
-      </Card>
-      
-      <Card style={{ padding: '2.5rem', borderRadius: '32px', background: 'linear-gradient(135deg, #064e3b, #043927)', color: 'white', border: 'none', position: 'relative', overflow: 'hidden' }}>
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 0.1, scale: 1 }}
-          style={{ position: 'absolute', top: '-20px', left: '-20px' }}
-        >
-          <TrendingUp size={200} />
-        </motion.div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr', gap: '2rem' }}>
+        <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#0f172a' }}>البيانات الفنية</h3>
+            <div style={{ padding: '0.6rem 1.2rem', borderRadius: '12px', background: '#f8fafc', border: '1px solid #f1f5f9', fontWeight: 800, color: '#064e3b', fontSize: '0.9rem' }}>
+              كود الحجز: {project.reservationCode || "-"}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
+            <DataField label="المرحلة / الإصدار" value={project.phaseNumber || "-"} />
+            <DataField label="الحي / المنطقة" value={project.neighborhood || "-"} />
+            <DataField label="مساحة الأرض" value={project.plotArea ? `${project.plotArea} م²` : "-"} />
+            <DataField label="سعر المتر" value={project.pricePerMeter ? `$${project.pricePerMeter}` : "-"} />
+            <DataField label="حساب الحجز" value={project.bookingAccount || "-"} />
+            <DataField label="نوع الحجز" value={project.reservationType === 'OFFICIAL' ? 'رسمي 🏛️' : 'مبدئي 📝'} />
+          </div>
+        </Card>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', position: 'relative' }}>
-           <h3 style={{ fontSize: '1.4rem', fontWeight: 900 }}>تحليل القيمة</h3>
-           <Badge style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>إنجاز {Math.round(progress)}%</Badge>
-        </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.5rem', position: 'relative' }}>
-          <motion.div whileHover={{ scale: 1.02 }} style={{ background: 'rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '20px' }}>
-            <p style={{ opacity: 0.6, fontSize: '0.9rem', marginBottom: '0.5rem' }}>القيمة الكلية بالدولار</p>
-            <p dir="ltr" style={{ fontSize: '2rem', fontWeight: 900, textAlign: 'right' }}>${(project.totalValue || 0).toLocaleString()}</p>
+        <Card style={{ padding: '2.5rem', borderRadius: '32px', background: 'linear-gradient(135deg, #064e3b, #043927)', color: 'white', border: 'none', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 0.1, scale: 1 }}
+            style={{ position: 'absolute', top: '-20px', left: '-20px' }}
+          >
+            <TrendingUp size={200} />
           </motion.div>
-          <motion.div whileHover={{ scale: 1.02 }} style={{ background: 'rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '20px' }}>
-            <p style={{ opacity: 0.6, fontSize: '0.9rem', marginBottom: '0.5rem' }}>القيمة الموازية (SAR)</p>
-            <p dir="ltr" style={{ fontSize: '2rem', fontWeight: 900, textAlign: 'right' }}>{((project.totalValue || 0) * (project.exchangeRate || 3.75)).toLocaleString()}</p>
-          </motion.div>
-        </div>
-      </Card>
+          
+          <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+               <h3 style={{ fontSize: '1.4rem', fontWeight: 900 }}>الحالة المالية</h3>
+               <Badge style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>{Math.round(progress)}% مكتمل</Badge>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.2rem' }}>
+              <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1.2rem', borderRadius: '20px' }}>
+                <p style={{ opacity: 0.6, fontSize: '0.8rem', marginBottom: '0.3rem' }}>إجمالي القيمة بالدولار</p>
+                <p dir="ltr" style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'right' }}>${(project.totalValue || 0).toLocaleString()}</p>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1.2rem', borderRadius: '20px' }}>
+                <p style={{ opacity: 0.6, fontSize: '0.8rem', marginBottom: '0.3rem' }}>المتبقي للهيئة</p>
+                <p dir="ltr" style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'right', color: '#fbbf24' }}>${remaining.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style={{ marginTop: '2rem', position: 'relative' }}>
+             <div style={{ height: '8px', width: '100%', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  style={{ height: '100%', background: '#10b981' }} 
+                />
+             </div>
+          </div>
+        </Card>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+        <MiniInsightCard title="الأقساط المتبقية" value={project.installmentsCount || "0"} icon={<Calendar size={20} />} />
+        <MiniInsightCard title="سعر الصرف المعتمد" value={`${project.exchangeRate || 3.75} SAR`} icon={<DollarSign size={20} />} />
+        <MiniInsightCard title="إجمالي المساهمات" value={`$${(project.totalPaid || 0).toLocaleString()}`} icon={<Users size={20} />} />
+      </div>
     </div>
+  );
+}
+
+function MiniInsightCard({ title, value, icon }: any) {
+  return (
+    <Card style={{ padding: '1.5rem', borderRadius: '24px', border: '1px solid #f1f5f9', background: 'white', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div style={{ width: '45px', height: '45px', borderRadius: '12px', background: '#064e3b10', color: '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {icon}
+      </div>
+      <div>
+        <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8' }}>{title}</p>
+        <p style={{ fontSize: '1.1rem', fontWeight: 900, color: '#1e293b' }}>{value}</p>
+      </div>
+    </Card>
   );
 }
 
@@ -833,38 +932,7 @@ function FinancesTab({ project, onAdd, onTransfer, onEdit, onDelete }: any) {
 function DocumentsTab({ project }: any) {
   return (
     <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-        <h3 style={{ fontSize: '1.5rem', fontWeight: 900 }}>مستودع المستندات</h3>
-        <Button style={{ borderRadius: '12px', background: '#3b82f6', color: 'white' }}>رفع ملف جديد</Button>
-      </div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
-        {project.documents?.map((doc: any, idx: number) => (
-          <motion.div 
-            key={doc.id}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: idx * 0.05 }}
-            whileHover={{ y: -10, boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}
-            style={{ 
-              padding: '1.5rem', borderRadius: '24px', background: '#f8fafc', border: '1px solid #e2e8f0',
-              display: 'flex', flexDirection: 'column' as const, alignItems: 'center', textAlign: 'center', gap: '1rem',
-              position: 'relative', cursor: 'pointer', transition: 'all 0.2s'
-            }}
-          >
-            <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}>
-              <FileText size={32} />
-            </div>
-            <div>
-              <p style={{ fontWeight: 800, fontSize: '0.9rem', marginBottom: '0.2rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '150px' }}>{doc.name}</p>
-              <p style={{ fontSize: '0.75rem', opacity: 0.5, fontWeight: 700 }}>{doc.type}</p>
-            </div>
-            <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ position: 'absolute', top: '1rem', left: '1rem', color: '#94a3b8' }}>
-              <Download size={16} />
-            </a>
-          </motion.div>
-        ))}
-      </div>
+      <DocumentExplorer projectId={project.id} />
     </Card>
   );
 }

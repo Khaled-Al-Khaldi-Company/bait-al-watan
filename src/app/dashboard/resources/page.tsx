@@ -16,6 +16,7 @@ export default function ResourcesPage() {
   
   const [resources, setResources] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingResource, setEditingResource] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -24,18 +25,26 @@ export default function ResourcesPage() {
     fetchResources();
   }, []);
 
-  const fetchResources = async () => {
-    try {
-      const res = await fetch('/api/resources');
-      if (res.ok) {
-        const data = await res.json();
-        setResources(data);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const fetchResources = () => {
+    setLoading(true);
+    setError(null);
+    fetch('/api/resources')
+      .then(res => {
+        if (!res.ok) throw new Error('فشل جلب البيانات');
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setResources(data);
+        } else if (data.error) {
+          setError(data.error);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -55,7 +64,13 @@ export default function ResourcesPage() {
         setShowModal(false);
         setEditingResource(null);
         fetchResources();
+        alert('تم حفظ الرابط بنجاح ✅');
+      } else {
+        const errData = await res.json();
+        alert(`فشل الحفظ: ${errData.error || 'حدث خطأ في الخادم'}`);
       }
+    } catch (err: any) {
+      alert(`خطأ في الاتصال: ${err.message}`);
     } finally {
       setSubmitting(false);
     }
@@ -91,20 +106,30 @@ export default function ResourcesPage() {
       
       <main style={{ flex: 1, padding: '2rem 3rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
         
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
-          <div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.5rem' }}>الروابط والمصادر الهامة 🌐</h1>
-            <p style={{ opacity: 0.6, fontWeight: 600 }}>الوصول السريع لمواقع الهيئة، مجموعات التواصل، والروابط الخدمية</p>
+        <header style={{ marginBottom: '3rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <div>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.5rem' }}>روابط والمصادر الهامة 🌐</h1>
+              <p style={{ opacity: 0.6, fontSize: '1.1rem', fontWeight: 600 }}>الوصول السريع لمواقع الهيئة، مجموعات التواصل، والمصادر المفيدة.</p>
+            </div>
+            {isAdmin && (
+              <Button 
+                onClick={() => { setEditingResource(null); setShowModal(true); }}
+                style={{ height: '3.5rem', borderRadius: '16px', background: '#064e3b', color: 'white', padding: '0 2rem', fontWeight: 800, gap: '0.5rem', boxShadow: '0 10px 20px rgba(6, 78, 59, 0.15)' }}
+              >
+                <Plus size={20} /> إضافة رابط جديد
+              </Button>
+            )}
           </div>
-          {isAdmin && (
-            <Button 
-              onClick={() => { setEditingResource(null); setShowModal(true); }}
-              style={{ borderRadius: '16px', background: '#064e3b', color: 'white', padding: '0 2rem', height: '3.5rem', fontWeight: 800, gap: '0.5rem' }}
-            >
-              <Plus size={20} /> إضافة رابط جديد
-            </Button>
-          )}
         </header>
+
+        {error && (
+          <div style={{ padding: '1.5rem', background: '#fef2f2', color: '#dc2626', borderRadius: '16px', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid #fee2e2', fontWeight: 700 }}>
+            <Info size={20} />
+            حدث خطأ أثناء جلب الروابط: {error}
+            <Button onClick={fetchResources} style={{ marginRight: 'auto', background: 'white', color: '#dc2626', border: '1px solid #fee2e2', padding: '0.5rem 1rem', height: 'auto' }}>إعادة المحاولة</Button>
+          </div>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '3rem' }}>
           {Object.entries(categories).map(([key, cat]) => {

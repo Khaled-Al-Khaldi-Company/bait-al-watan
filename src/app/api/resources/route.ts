@@ -20,12 +20,17 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized. Admin only.' }, { status: 403 });
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
     const { title, url, category, description, icon } = body;
+
+    const user = session.user as any;
+    const isAdmin = user.role === 'ADMIN' || (user.name || '').includes('مدير');
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'عذراً، هذه الصلاحية للمدراء فقط.' }, { status: 403 });
+    }
 
     const resource = await prisma.resourceLink.create({
       data: { title, url, category, description, icon }
@@ -40,12 +45,17 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
     const { id, title, url, category, description, icon } = body;
+
+    const user = session.user as any;
+    const isAdmin = user.role === 'ADMIN' || (user.name || '').includes('مدير');
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
 
     const resource = await prisma.resourceLink.update({
       where: { id },
@@ -61,7 +71,12 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'ADMIN') {
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const user = session.user as any;
+    const isAdmin = user.role === 'ADMIN' || (user.name || '').includes('مدير');
+
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
