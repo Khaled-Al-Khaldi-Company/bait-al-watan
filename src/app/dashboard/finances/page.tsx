@@ -218,9 +218,6 @@ export default function FinancesPage() {
               العودة للصفحة السابقة <ChevronLeft size={14} />
             </div>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>الإدارة المالية المركزية</h1>
-            
-            )}
-
             <p style={{ opacity: 0.7 }}>متابعة السيولة، المصاريف الإدارية، وسداد الهيئة.</p>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
