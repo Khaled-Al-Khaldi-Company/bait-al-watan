@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Building2, Users, FileText,
   Wallet, Landmark, BarChart3, Settings, LogOut,
   MessageSquare, ChevronRight, ChevronLeft, User, Cloud,
-  Zap, ShieldCheck, Crown
+  Zap, ShieldCheck, Crown, Globe
 } from 'lucide-react';
 
 const EXPANDED_W = 280; 
@@ -47,7 +47,7 @@ export default function Sidebar() {
       animate={{ width: isCollapsed ? COLLAPSED_W : EXPANDED_W }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       style={{
-        background: 'linear-gradient(185deg, #0f172a 0%, #1e293b 40%, #020617 100%)',
+        background: 'linear-gradient(185deg, #064e3b 0%, #042f2e 40%, #021a14 100%)',
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
