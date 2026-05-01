@@ -8,7 +8,7 @@ import {
   DollarSign, Building, Info, TrendingUp, ShieldCheck, 
   Users, FileText, Activity, Clock, ArrowRight,
   Download, ExternalLink, Receipt, Settings, BarChart3,
-  History, PieChart, Layers, Trash2, Edit3, Share2, X
+  History, PieChart, Layers, Trash2, Edit3, Share2, X, Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
