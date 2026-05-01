@@ -896,9 +896,9 @@ const closeButton: any = {
   cursor: 'pointer'
 };
 
-const formGroup: any = { display: 'flex', flexDirection: 'column', gap: '0.5rem' };
-const formLabel: any = { fontWeight: 800, fontSize: '0.9rem', color: '#64748b' };
-const formInput: any = { padding: '1rem', borderRadius: '14px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' };
+const formGroup = { display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' };
+const formLabel = { fontWeight: 800, fontSize: '0.9rem', color: '#64748b' };
+const formInput = { padding: '1rem', borderRadius: '14px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' };
 
 function getStatusLabel(status: string) {
   const labels: any = { 'UNDER_STUDY': 'تحت الدراسة', 'SUBMITTED': 'تم التقديم', 'ALLOCATED': 'تم التخصيص', 'IN_PROGRESS': 'قيد التنفيذ', 'COMPLETED': 'مكتمل' };
