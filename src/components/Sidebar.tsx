@@ -36,6 +36,7 @@ export default function Sidebar() {
     { href: '/dashboard/members',   icon: <Users size={22} />,           label: 'إدارة الأعضاء' },
     { href: '/dashboard/finances',  icon: <Wallet size={22} />,          label: 'الحركة المالية' },
     { href: '/dashboard/reports',   icon: <Zap size={22} />,             label: 'تقارير الأداء' },
+    { href: '/dashboard/resources', icon: <Globe size={22} />,           label: 'روابط هامة' },
     { href: '/dashboard/documents', icon: <FileText size={22} />,        label: 'الأرشيف الرقمي' },
     { href: '/dashboard/messages',  icon: <MessageSquare size={22} />,   label: 'المراسلات' },
   ];

@@ -165,3 +165,14 @@ model ActivityLog {
 
   user          User      @relation(fields: [userId], references: [id])
 }
+
+model ResourceLink {
+  id          String   @id @default(cuid())
+  title       String
+  url         String
+  category    String?  // AUTHORITY, WHATSAPP, GENERAL, etc.
+  description String?
+  icon        String?  // lucide icon name
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
