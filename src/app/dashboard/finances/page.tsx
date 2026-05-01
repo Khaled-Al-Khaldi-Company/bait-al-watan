@@ -55,32 +55,33 @@ export default function FinancesPage() {
   const handleSubmitTransaction = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
-    const formData = new FormData(e.currentTarget);
+    const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
     
+    // Append the amounts manually if they were calculated/updated via SAR input
+    formData.set('amount', usdAmount);
+
     const isEditing = !!selectedTransaction?.id;
-    const body = {
-      id: selectedTransaction?.id,
-      projectId: formData.get('projectId'),
-      amount: usdAmount || formData.get('amount'),
-      officialAmount: formData.get('officialAmount'),
-      date: formData.get('date'),
-      purpose: formData.get('purpose'),
-      type: formData.get('type')
-    };
+    if (isEditing) {
+      formData.append('id', selectedTransaction.id);
+    }
 
     try {
       const res = await fetch('/api/finances', {
         method: isEditing ? 'PATCH' : 'POST',
-        body: JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' }
+        body: formData, // Sending FormData instead of JSON
       });
 
       if (res.ok) {
         handleCloseModal();
         fetchData();
+      } else {
+        const err = await res.json();
+        alert(`فشل الحفظ: ${err.error || 'حدث خطأ غير معروف'}`);
       }
     } catch (error) {
       console.error(error);
+      alert('فشل الاتصال بالسيرفر، يرجى المحاولة مرة أخرى.');
     } finally {
       setSubmitting(false);
     }
