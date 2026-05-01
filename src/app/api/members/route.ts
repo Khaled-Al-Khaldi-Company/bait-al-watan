@@ -14,9 +14,9 @@ export async function GET(req: NextRequest) {
     const userId = user?.id;
     const isAdmin = role === 'ADMIN' || (user?.name || '').includes('مدير');
 
-    // Only Admin and Viewer can list all members
-    if (!isAdmin && role !== 'VIEWER') {
-      // If member, they can only see their own profile info in this list
+    // Only Admin can list all members (Viewer is now blocked)
+    if (!isAdmin) {
+      // If regular user or viewer, they can only see their own profile info
       const me = await prisma.user.findUnique({
         where: { id: userId },
         select: { id: true, name: true, email: true, role: true }
@@ -37,7 +37,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'ADMIN') {
+    const user = session?.user as any;
+    const isAdmin = user?.role === 'ADMIN' || (user?.name || '').includes('مدير');
+
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -46,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await hash(password || 'password123', 10);
 
-    const user = await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         name,
         email,
@@ -55,7 +58,7 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json(newUser);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -64,7 +67,10 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'ADMIN') {
+    const user = session?.user as any;
+    const isAdmin = user?.role === 'ADMIN' || (user?.name || '').includes('مدير');
+
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -74,17 +80,16 @@ export async function PATCH(req: NextRequest) {
 
     const updateData: any = { role, name, email };
     
-    // If password is provided, hash it before updating
     if (password && password.trim() !== '') {
       updateData.password = await hash(password, 10);
     }
 
-    const user = await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
       data: updateData
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json(updatedUser);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -93,7 +98,10 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'ADMIN') {
+    const user = session?.user as any;
+    const isAdmin = user?.role === 'ADMIN' || (user?.name || '').includes('مدير');
+
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -101,8 +109,7 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
-    // Prevent deleting self
-    if (id === (session.user as any).id) {
+    if (id === user.id) {
       return NextResponse.json({ error: 'Cannot delete yourself' }, { status: 400 });
     }
 

@@ -25,8 +25,28 @@ export default function MembersPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetchMembers();
-  }, []);
+    if (!isViewer) {
+      fetchMembers();
+    }
+  }, [isViewer]);
+
+  if (isViewer) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
+        <Sidebar />
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.05)', maxWidth: '500px' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <Shield size={40} />
+            </div>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0f172a', marginBottom: '1rem' }}>دخول غير مصرح به ⛔</h2>
+            <p style={{ color: '#64748b', fontWeight: 600, lineHeight: 1.6 }}>عذراً، بصفتك "مراقب نظام"، لا تملك صلاحية الوصول إلى إدارة الشركاء أو تعديل بياناتهم.</p>
+            <Button onClick={() => window.history.back()} style={{ marginTop: '2rem', background: '#0f172a', color: 'white', padding: '0.8rem 2rem', borderRadius: '15px' }}>العودة للخلف</Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const fetchMembers = () => {
     setLoading(true);
@@ -91,8 +111,8 @@ export default function MembersPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
       <Sidebar />
-      <main style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ width: '100%', maxWidth: '1200px' }}>
+      <main style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto' }}>
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* Modern Header */}
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>

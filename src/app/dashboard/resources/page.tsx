@@ -103,8 +103,8 @@ export default function ResourcesPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
       <Sidebar />
-      <main style={{ flex: 1, padding: '2.5rem', overflowY: 'auto', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ width: '100%', maxWidth: '1100px' }}>
+      <main style={{ flex: 1, padding: '2.5rem', overflowY: 'auto' }}>
+        <div style={{ width: '100%', maxWidth: '1100px', margin: '0 auto' }}>
         <header style={{ marginBottom: '3.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
             <div onClick={() => window.history.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#64748b', fontWeight: 700, marginBottom: '0.8rem' }}>
