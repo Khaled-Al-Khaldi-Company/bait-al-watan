@@ -22,6 +22,7 @@ export default function FinancesPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [showTransferModal, setShowTransferModal] = useState(false);
 
   // Currency States
   const [sarAmount, setSarAmount] = useState<string>('');
@@ -95,6 +96,50 @@ export default function FinancesPage() {
     setUsdAmount(t.amount.toString());
     setSarAmount((t.amount * currentExchangeRate).toFixed(2));
     setShowModal(true);
+  };
+
+  const handleTransfer = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    const body = {
+      sourceProjectId: formData.get('sourceProjectId'),
+      targetProjectId: formData.get('targetProjectId'),
+      amount: parseFloat(formData.get('amount') as string),
+      purpose: formData.get('purpose'),
+      mirrorPartners: true, 
+      date: formData.get('date')
+    };
+
+    if (body.sourceProjectId === body.targetProjectId) {
+      alert('لا يمكن التحويل لنفس المشروع');
+      setSubmitting(false);
+      return;
+    }
+
+    if (!confirm('سيقوم النظام بخصم المبلغ من المصدر وتوزيعه كحصص مساهمين في الوجهة بناءً على نسبهم. هل تريد المتابعة؟')) {
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/finances/transfer', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        setShowTransferModal(false);
+        fetchData();
+      } else {
+        const err = await res.json();
+        alert(`فشل التحويل: ${err.error}`);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -173,13 +218,21 @@ export default function FinancesPage() {
               العودة للصفحة السابقة <ChevronLeft size={14} />
             </div>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>الإدارة المالية المركزية</h1>
+            
+            )}
+
             <p style={{ opacity: 0.7 }}>متابعة السيولة، المصاريف الإدارية، وسداد الهيئة.</p>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             {!isViewer && (
-              <Button onClick={() => setShowModal(true)} style={{ height: '3.5rem', padding: '0 2rem' }}>
-                <Plus size={18} /> تسجيل حركة مالية
-              </Button>
+              <>
+                <Button onClick={() => setShowTransferModal(true)} variant="secondary" style={{ height: '3.5rem', padding: '0 2rem', background: '#f8fafc', border: '2px solid #064e3b', color: '#064e3b' }}>
+                  <Activity size={18} /> مناقلة سيولة ذكية
+                </Button>
+                <Button onClick={() => setShowModal(true)} style={{ height: '3.5rem', padding: '0 2rem' }}>
+                  <Plus size={18} /> تسجيل حركة مالية
+                </Button>
+              </>
             )}
           </div>
         </header>
@@ -266,6 +319,46 @@ export default function FinancesPage() {
           </table>
         </div>
       </Card>
+
+      {/* Transfer Modal */}
+      {showTransferModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101, backdropFilter: 'blur(8px)' }}>
+          <Card style={{ width: '100%', maxWidth: '500px', padding: '2.5rem', borderRadius: '32px', position: 'relative' }}>
+            <button onClick={() => setShowTransferModal(false)} style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer' }}><X size={20} /></button>
+            <h3 style={{ marginBottom: '1.3rem', textAlign: 'center', fontWeight: 900, fontSize: '1.6rem' }}>مناقلة سيولة ذكية 🔄</h3>
+            <p style={{ textAlign: 'center', opacity: 0.6, fontSize: '0.9rem', marginBottom: '2rem' }}>سيتم توزيع المبلغ تلقائياً على الشركاء حسب نسبهم.</p>
+            <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontWeight: 700 }}>من مشروع (المصدر)</label>
+                <select name="sourceProjectId" required style={inputStyle}>
+                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontWeight: 700 }}>إلى مشروع (الوجهة)</label>
+                <select name="targetProjectId" required style={inputStyle}>
+                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontWeight: 700 }}>المبلغ المراد تحويله ($)</label>
+                <input type="number" name="amount" step="0.01" required style={inputStyle} placeholder="0.00" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontWeight: 700 }}>البيان / السبب</label>
+                <input type="text" name="purpose" required style={inputStyle} placeholder="مثال: تمويل بداية الإنشاءات..." />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontWeight: 700 }}>التاريخ</label>
+                <input type="date" name="date" required defaultValue={new Date().toISOString().split('T')[0]} style={inputStyle} />
+              </div>
+              <Button type="submit" disabled={submitting} style={{ height: '4rem', borderRadius: '18px', fontSize: '1.1rem', fontWeight: 800, marginTop: '1rem' }}>
+                {submitting ? <Loader2 className="animate-spin" /> : 'تنفيذ المناقلة الذكية'}
+              </Button>
+            </form>
+          </Card>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && (
