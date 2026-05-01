@@ -43,8 +43,12 @@ export default function ProjectDetailsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [showAddPartner, setShowAddPartner] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
+  const [allProjects, setAllProjects] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [activities, setActivities] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -54,9 +58,11 @@ export default function ProjectDetailsPage() {
 
   const fetchProject = async () => {
     try {
-      const [projRes, usersRes] = await Promise.all([
+      const [projRes, usersRes, actRes, allProjRes] = await Promise.all([
         fetch(`/api/projects/${id}`),
-        fetch('/api/members')
+        fetch('/api/members'),
+        fetch(`/api/dashboard/activities?projectId=${id}`),
+        fetch('/api/projects')
       ]);
       
       if (projRes.ok) {
@@ -66,6 +72,14 @@ export default function ProjectDetailsPage() {
       if (usersRes.ok) {
         const usrs = await usersRes.json();
         setUsers(usrs);
+      }
+      if (actRes.ok) {
+        const acts = await actRes.json();
+        setActivities(acts);
+      }
+      if (allProjRes.ok) {
+        const projs = await allProjRes.json();
+        setAllProjects(projs);
       }
     } catch (err) {
       console.error('Error fetching project data:', err);
@@ -158,18 +172,64 @@ export default function ProjectDetailsPage() {
     setSubmitting(true);
     const formData = new FormData(e.currentTarget);
     formData.append('projectId', id as string);
+    if (selectedTransaction) {
+      formData.append('id', selectedTransaction.id);
+    }
 
     try {
       const res = await fetch('/api/finances', {
-        method: 'POST',
+        method: selectedTransaction ? 'PATCH' : 'POST',
         body: formData
       });
       if (res.ok) {
         setShowAddTransaction(false);
+        setSelectedTransaction(null);
         fetchProject();
       } else {
         const err = await res.json();
-        alert(err.error || 'فشل إضافة العملية');
+        alert(err.error || 'فشل معالجة العملية');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleTransfer = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    const body = {
+      sourceProjectId: id,
+      targetProjectId: formData.get('targetProjectId'),
+      amount: parseFloat(formData.get('amount') as string),
+      purpose: formData.get('purpose'),
+      mirrorPartners: true,
+      date: formData.get('date')
+    };
+
+    if (body.sourceProjectId === body.targetProjectId) {
+      alert('لا يمكن التحويل لنفس المشروع');
+      setSubmitting(false);
+      return;
+    }
+
+    if (!confirm('سيتم توزيع المبلغ على شركاء هذا المشروع في المشروع الوجهة بناءً على نسبهم الحالية. هل تريد المتابعة؟')) {
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/finances/transfer', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        setShowTransferModal(false);
+        fetchProject();
+      } else {
+        const err = await res.json();
+        alert(`فشل التحويل: ${err.error}`);
       }
     } finally {
       setSubmitting(false);
@@ -318,8 +378,19 @@ export default function ProjectDetailsPage() {
         >
           {activeTab === 'overview' && <OverviewTab project={project} progress={progress} />}
           {activeTab === 'partners' && <PartnersTab project={project} onAdd={() => setShowAddPartner(true)} onDelete={handleDeletePartner} />}
-          {activeTab === 'timeline' && <TimelineTab project={project} />}
-          {activeTab === 'finances' && <FinancesTab project={project} onAdd={() => setShowAddTransaction(true)} onDelete={handleDeleteTransaction} />}
+          {activeTab === 'timeline' && <TimelineTab activities={activities} />}
+          {activeTab === 'finances' && (
+            <FinancesTab 
+              project={project} 
+              onAdd={() => setShowAddTransaction(true)} 
+              onTransfer={() => setShowTransferModal(true)}
+              onEdit={(t: any) => {
+                setSelectedTransaction(t);
+                setShowAddTransaction(true);
+              }}
+              onDelete={handleDeleteTransaction} 
+            />
+          )}
           {activeTab === 'documents' && <DocumentsTab project={project} />}
           {activeTab === 'settings' && <SettingsTab project={project} onSubmit={handleUpdateProject} onDelete={handleDeleteProject} submitting={submitting} />}
         </motion.div>
@@ -355,23 +426,26 @@ export default function ProjectDetailsPage() {
           )}
 
           {showAddTransaction && (
-            <Modal onClose={() => setShowAddTransaction(false)} maxWidth="650px">
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '2rem' }}>تسجيل عملية مالية جديدة</h2>
+            <Modal onClose={() => { setShowAddTransaction(false); setSelectedTransaction(null); }} maxWidth="650px">
+              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '2rem' }}>
+                {selectedTransaction ? 'تعديل عملية مالية' : 'تسجيل عملية مالية جديدة'}
+              </h2>
               <form onSubmit={handleAddTransaction} style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.2rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                    <div style={formGroup}>
                       <label style={formLabel}>نوع العملية</label>
-                      <select name="type" required style={formInput}>
+                      <select name="type" required defaultValue={selectedTransaction?.type || 'MEMBER_CONTRIBUTION'} style={formInput}>
                         <option value="MEMBER_CONTRIBUTION">مساهمة من شريك (إيداع)</option>
                         <option value="AUTHORITY_PAYMENT">سداد للهيئة (قسط/رسوم)</option>
                         <option value="OTHER_EXPENSE">مصاريف أخرى (عمولات/إداري)</option>
                         <option value="RESERVATION_FEE_PAYMENT">رسوم حجز</option>
                         <option value="INSTALLMENT_PAYMENT">قسط دوري</option>
+                        <option value="LIQUIDITY_TRANSFER">تحويل سيولة (مناقلة)</option>
                       </select>
                    </div>
                    <div style={formGroup}>
                       <label style={formLabel}>الشريك المرتبط (اختياري)</label>
-                      <select name="userId" style={formInput}>
+                      <select name="userId" defaultValue={selectedTransaction?.userId || ''} style={formInput}>
                         <option value="">-- اختر الشريك --</option>
                         {project.participations?.map((p: any) => <option key={p.user.id} value={p.user.id}>{p.user.name}</option>)}
                       </select>
@@ -381,28 +455,28 @@ export default function ProjectDetailsPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                    <div style={formGroup}>
                       <label style={formLabel}>المبلغ الإجمالي ($)</label>
-                      <input name="amount" type="number" step="0.01" required style={formInput} placeholder="0.00" />
+                      <input name="amount" type="number" step="0.01" required defaultValue={selectedTransaction ? Math.abs(selectedTransaction.amount) : ''} style={formInput} placeholder="0.00" />
                    </div>
                    <div style={formGroup}>
                       <label style={formLabel}>المبلغ الرسمي للهيئة ($)</label>
-                      <input name="officialAmount" type="number" step="0.01" style={formInput} placeholder="0.00" />
+                      <input name="officialAmount" type="number" step="0.01" defaultValue={selectedTransaction?.officialAmount || ''} style={formInput} placeholder="0.00" />
                    </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                    <div style={formGroup}>
                       <label style={formLabel}>التاريخ</label>
-                      <input name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} style={formInput} />
+                      <input name="date" type="date" required defaultValue={selectedTransaction?.date ? new Date(selectedTransaction.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} style={formInput} />
                    </div>
                    <div style={formGroup}>
                       <label style={formLabel}>سعر صرف الجنيه (EGP)</label>
-                      <input name="egpRate" type="number" step="0.1" defaultValue="50" style={formInput} />
+                      <input name="egpRate" type="number" step="0.1" defaultValue={selectedTransaction?.egpRate || "50"} style={formInput} />
                    </div>
                 </div>
 
                 <div style={formGroup}>
                   <label style={formLabel}>البيان / الملاحظات</label>
-                  <input name="purpose" required style={formInput} placeholder="مثال: القسط الأول - الحجز الرسمي" />
+                  <input name="purpose" required defaultValue={selectedTransaction?.purpose || ''} style={formInput} placeholder="مثال: القسط الأول - الحجز الرسمي" />
                 </div>
 
                 <div style={formGroup}>
@@ -411,7 +485,40 @@ export default function ProjectDetailsPage() {
                 </div>
 
                 <Button type="submit" disabled={submitting} style={{ height: '3.5rem', borderRadius: '14px', background: '#064e3b', color: 'white', fontWeight: 800, marginTop: '1rem' }}>
-                   {submitting ? <Loader2 className="animate-spin" /> : 'حفظ العملية المالية'}
+                   {submitting ? <Loader2 className="animate-spin" /> : (selectedTransaction ? 'تحديث البيانات' : 'حفظ العملية المالية')}
+                </Button>
+              </form>
+            </Modal>
+          )}
+
+          {showTransferModal && (
+            <Modal onClose={() => setShowTransferModal(false)} maxWidth="500px">
+              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '1rem' }}>مناقلة سيولة ذكية 🔄</h2>
+              <p style={{ textAlign: 'center', opacity: 0.6, fontSize: '0.9rem', marginBottom: '2rem' }}>سيتم توزيع المبلغ تلقائياً على الشركاء في الوجهة حسب نسبهم في هذا المشروع.</p>
+              <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.2rem' }}>
+                <div style={formGroup}>
+                  <label style={formLabel}>إلى مشروع (الوجهة)</label>
+                  <select name="targetProjectId" required style={formInput}>
+                    <option value="">-- اختر المشروع الهدف --</option>
+                    {allProjects?.filter((p: any) => p.id !== id).map((p: any) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={formGroup}>
+                  <label style={formLabel}>المبلغ المراد تحويله ($)</label>
+                  <input name="amount" type="number" step="0.01" required style={formInput} placeholder="0.00" />
+                </div>
+                <div style={formGroup}>
+                  <label style={formLabel}>البيان / السبب</label>
+                  <input name="purpose" required style={formInput} placeholder="مثال: تمويل بداية الإنشاءات..." />
+                </div>
+                <div style={formGroup}>
+                  <label style={formLabel}>التاريخ</label>
+                  <input name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} style={formInput} />
+                </div>
+                <Button type="submit" disabled={submitting} style={{ height: '4rem', borderRadius: '18px', fontSize: '1.1rem', fontWeight: 800, marginTop: '1rem', background: '#064e3b', color: 'white' }}>
+                  {submitting ? <Loader2 className="animate-spin" /> : 'تنفيذ المناقلة الذكية'}
                 </Button>
               </form>
             </Modal>
@@ -594,55 +701,47 @@ function PartnersTab({ project, onAdd, onDelete }: any) {
   );
 }
 
-function TimelineTab({ project }: any) {
+function TimelineTab({ activities }: any) {
   return (
     <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
-      <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '3rem' }}>المراحل التشغيلية</h3>
-      <div style={{ position: 'relative', paddingLeft: '2rem' }}>
-        <div style={{ position: 'absolute', right: '1.5rem', top: 0, bottom: 0, width: '2px', background: '#e2e8f0' }} />
-        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '2rem' }}>
-          {project.phases?.map((phase: any, idx: number) => (
+      <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '3rem' }}>سجل الأنشطة والمسار الزمني 🕒</h3>
+      <div style={{ position: 'relative', paddingRight: '2rem' }}>
+        <div style={{ position: 'absolute', right: '1.5rem', top: 0, bottom: 0, width: '2px', background: '#f1f5f9' }} />
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '2.5rem' }}>
+          {activities?.map((activity: any, idx: number) => (
             <motion.div 
-              key={phase.id}
+              key={activity.id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1 }}
+              transition={{ delay: idx * 0.05 }}
               style={{ display: 'flex', gap: '2rem', position: 'relative' }}
             >
               <div style={{ 
-                width: '40px', height: '40px', borderRadius: '50%', background: getPhaseColor(phase.status),
-                color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                zIndex: 10, fontSize: '1rem', fontWeight: 900, marginRight: '-19px',
-                boxShadow: '0 0 0 5px white'
-              }}>
-                {idx + 1}
+                width: '16px', height: '16px', borderRadius: '50%', background: '#064e3b',
+                zIndex: 10, marginRight: '-23px', marginTop: '10px',
+                boxShadow: '0 0 0 5px white, 0 0 0 10px #f0fdf4'
+              }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <h4 style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b' }}>{activity.description}</h4>
+                  <span style={{ fontSize: '0.8rem', opacity: 0.5, fontWeight: 700 }}>
+                    {new Date(activity.createdAt).toLocaleString('ar-EG')}
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>بواسطة: {activity.user?.name}</p>
               </div>
-              <motion.div 
-                whileHover={{ x: -10 }}
-                style={{ 
-                  flex: 1, padding: '1.5rem', borderRadius: '24px', background: phase.status === 'ACTIVE' ? '#f0fdf4' : '#f8fafc',
-                  border: phase.status === 'ACTIVE' ? '2px solid #bbf7d0' : '1px solid #e2e8f0'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                  <h4 style={{ fontWeight: 800, fontSize: '1.2rem' }}>{phase.name}</h4>
-                  <Badge style={{ background: 'white', color: getPhaseColor(phase.status), border: `1px solid ${getPhaseColor(phase.status)}` }}>
-                    {getPhaseLabel(phase.status)}
-                  </Badge>
-                </div>
-                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>
-                  {phase.tasks?.length || 0} مهام مدرجة
-                </div>
-              </motion.div>
             </motion.div>
           ))}
+          {(!activities || activities.length === 0) && (
+            <p style={{ textAlign: 'center', opacity: 0.4, padding: '3rem' }}>لا توجد أنشطة مسجلة بعد.</p>
+          )}
         </div>
       </div>
     </Card>
   );
 }
 
-function FinancesTab({ project, onAdd, onDelete }: any) {
+function FinancesTab({ project, onAdd, onTransfer, onEdit, onDelete }: any) {
   const { data: session } = useSession();
   const isAdmin = (session?.user as any)?.role === 'ADMIN' || (session?.user?.name || '').includes('مدير');
 
@@ -651,9 +750,14 @@ function FinancesTab({ project, onAdd, onDelete }: any) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h3 style={{ fontSize: '1.5rem', fontWeight: 900 }}>سجل المعاملات المالية</h3>
         {isAdmin && (
-          <Button onClick={onAdd} style={{ borderRadius: '14px', background: '#064e3b', color: 'white', gap: '0.5rem' }}>
-            <DollarSign size={18} /> إضافة عملية جديدة
-          </Button>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <Button onClick={onTransfer} variant="outline" style={{ borderRadius: '14px', gap: '0.5rem', fontWeight: 700 }}>
+              <Activity size={18} /> مناقلة سيولة
+            </Button>
+            <Button onClick={onAdd} style={{ borderRadius: '14px', background: '#064e3b', color: 'white', gap: '0.5rem' }}>
+              <Plus size={18} /> إضافة عملية
+            </Button>
+          </div>
         )}
       </div>
       <div style={{ overflowX: 'auto' }}>
@@ -697,7 +801,10 @@ function FinancesTab({ project, onAdd, onDelete }: any) {
                          </a>
                        )}
                        {isAdmin && (
-                         <Button onClick={() => onDelete(t.id)} variant="outline" style={{ color: '#ef4444', padding: '0.4rem 0.6rem', borderColor: '#fee2e2' }}><Trash2 size={16} /></Button>
+                         <>
+                           <Button onClick={() => onEdit(t)} variant="outline" style={{ color: '#3b82f6', padding: '0.4rem 0.6rem' }}><Edit3 size={16} /></Button>
+                           <Button onClick={() => onDelete(t.id)} variant="outline" style={{ color: '#ef4444', padding: '0.4rem 0.6rem', borderColor: '#fee2e2' }}><Trash2 size={16} /></Button>
+                         </>
                        )}
                      </div>
                   </td>

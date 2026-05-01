@@ -10,52 +10,57 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const { searchParams } = new URL(req.url);
+    const projectId = searchParams.get('projectId');
+
     // Fetch recent activities from various tables
+    const whereClause = projectId ? { projectId } : {};
+
     const [recentTransactions, recentProjects, recentDocs] = await Promise.all([
       prisma.transaction.findMany({
-        take: 5,
+        where: whereClause,
+        take: 20,
         orderBy: { date: 'desc' },
         include: { project: { select: { name: true } }, user: { select: { name: true } } }
       }),
       prisma.project.findMany({
-        take: 3,
+        where: projectId ? { id: projectId } : {},
+        take: 5,
         orderBy: { createdAt: 'desc' },
         select: { id: true, name: true, createdAt: true }
       }),
       prisma.document.findMany({
-        take: 3,
+        where: whereClause,
+        take: 10,
         orderBy: { createdAt: 'desc' },
         include: { project: { select: { name: true } } }
       })
     ]);
 
-    // Format into a unified activity feed
+    // Format into a unified activity feed for Timeline
     const activities = [
       ...recentTransactions.map(t => ({
         id: `tx-${t.id}`,
-        title: `${t.type === 'MEMBER_CONTRIBUTION' ? 'مساهمة من' : 'دفع للهيئة:'} ${t.user.name}`,
-        subtitle: `${t.project.name} - $${t.amount.toLocaleString()}`,
-        time: t.date,
-        color: t.amount > 0 ? '#10b981' : '#ef4444',
+        description: `${t.type === 'MEMBER_CONTRIBUTION' ? 'إيداع نقدي:' : 'عملية صرف:'} ${t.purpose}`,
+        createdAt: t.date,
+        user: { name: t.user.name },
         type: 'FINANCE'
       })),
       ...recentProjects.map(p => ({
         id: `pr-${p.id}`,
-        title: `حجز جديد: ${p.name}`,
-        subtitle: 'تمت إضافة المشروع للنظام',
-        time: p.createdAt,
-        color: '#3b82f6',
+        description: `تأسيس ملف حجز جديد: ${p.name}`,
+        createdAt: p.createdAt,
+        user: { name: 'النظام' },
         type: 'PROJECT'
       })),
       ...recentDocs.map(d => ({
         id: `doc-${d.id}`,
-        title: `مستند جديد: ${d.name}`,
-        subtitle: `في مشروع: ${d.project.name}`,
-        time: d.createdAt,
-        color: '#f59e0b',
+        description: `رفع مستند جديد: ${d.name}`,
+        createdAt: d.createdAt,
+        user: { name: 'إدارة الملفات' },
         type: 'DOCUMENT'
       }))
-    ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 8);
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20);
 
     return NextResponse.json(activities);
   } catch (error: any) {
