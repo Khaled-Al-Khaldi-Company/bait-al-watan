@@ -7,10 +7,17 @@ export async function GET(req: NextRequest, { params }: { params: { path: string
     // Reconstruct path from segments
     const filePathSegments = params.path;
     // Map to our stable storage outside public
-    const fullPath = path.join(process.cwd(), 'storage', ...filePathSegments);
+    // Map to our storage
+    let fullPath;
+    if (filePathSegments[0] === 'tmp') {
+       // Handle Vercel /tmp directory
+       fullPath = path.join('/tmp', ...filePathSegments.slice(1));
+    } else {
+       fullPath = path.join(process.cwd(), 'storage', ...filePathSegments);
+    }
 
     if (!fs.existsSync(fullPath)) {
-      return new NextResponse('File not found', { status: 404 });
+      return new NextResponse('File not found: ' + fullPath, { status: 404 });
     }
 
     const fileBuffer = fs.readFileSync(fullPath);

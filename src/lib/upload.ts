@@ -23,10 +23,13 @@ export async function uploadFile(file: File): Promise<string> {
         const data = await res.json();
         return data.secure_url;
       }
-      console.warn('Cloudinary upload failed, falling back to local:', await res.text());
+      const errorText = await res.text();
+      console.error('Cloudinary upload failed:', errorText);
     } catch (err) {
       console.error('Cloudinary error:', err);
     }
+  } else {
+    console.warn('Cloudinary credentials missing, falling back to local storage.');
   }
 
   // Fallback to local storage (Only works on local dev, will persist briefly on Vercel /tmp)

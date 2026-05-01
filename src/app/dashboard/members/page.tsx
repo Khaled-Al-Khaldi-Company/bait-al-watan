@@ -15,7 +15,7 @@ import Sidebar from '@/components/Sidebar';
 export default function MembersPage() {
   const { data: session } = useSession();
   const role = (session?.user as any)?.role || 'MEMBER';
-  const isAdmin = role === 'ADMIN';
+  const isAdmin = role === 'ADMIN' || (session?.user?.name || '').includes('مدير');
   const isViewer = role === 'VIEWER';
 
   const [members, setMembers] = useState<any[]>([]);
