@@ -20,26 +20,68 @@ export default function Sidebar() {
   const { data: session } = useSession();
   const user = session?.user as any;
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
       '--sidebar-width',
-      isCollapsed ? `${COLLAPSED_W}px` : `${EXPANDED_W}px`
+      isMobile ? '0px' : (isCollapsed ? `${COLLAPSED_W}px` : `${EXPANDED_W}px`)
     );
-  }, [isCollapsed]);
+  }, [isCollapsed, isMobile]);
 
   const menuItems = [
-    { href: '/dashboard',           icon: <LayoutDashboard size={22} />, label: 'لوحة التحكم' },
-    { href: '/dashboard/analytics', icon: <BarChart3 size={22} />,       label: 'تحليل السيولة' },
-    { href: '/dashboard/projects',  icon: <Landmark size={22} />,        label: 'سجل الحجوزات' },
-    { href: '/dashboard/reservations', icon: <Users size={22} />,        label: 'توزيع الحصص' },
-    ...(user?.role !== 'VIEWER' ? [{ href: '/dashboard/members', icon: <Users size={22} />, label: 'إدارة الأعضاء' }] : []),
-    { href: '/dashboard/finances',  icon: <Wallet size={22} />,          label: 'الحركة المالية' },
-    { href: '/dashboard/reports',   icon: <Zap size={22} />,             label: 'تقارير الأداء' },
-    { href: '/dashboard/resources', icon: <Globe size={22} />,           label: 'روابط هامة' },
-    { href: '/dashboard/documents', icon: <FileText size={22} />,        label: 'الأرشيف الرقمي' },
-    { href: '/dashboard/messages',  icon: <MessageSquare size={22} />,   label: 'المراسلات' },
+    { href: '/dashboard',           icon: <LayoutDashboard size={22} />, label: 'الرئيسية' },
+    { href: '/dashboard/analytics', icon: <BarChart3 size={22} />,       label: 'السيولة' },
+    { href: '/dashboard/projects',  icon: <Landmark size={22} />,        label: 'الحجوزات' },
+    { href: '/dashboard/reservations', icon: <Users size={22} />,        label: 'الحصص' },
+    ...(user?.role !== 'VIEWER' ? [{ href: '/dashboard/members', icon: <Users size={22} />, label: 'الأعضاء' }] : []),
+    { href: '/dashboard/finances',  icon: <Wallet size={22} />,          label: 'المالية' },
+    { href: '/dashboard/resources', icon: <Globe size={22} />,           label: 'روابط' },
+    { href: '/dashboard/documents', icon: <FileText size={22} />,        label: 'الأرشيف' },
   ];
+
+  if (isMobile) {
+    return (
+      <nav style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: 'rgba(6, 78, 59, 0.95)',
+        backdropFilter: 'blur(10px)',
+        height: '70px',
+        display: 'flex',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        padding: '0 1rem',
+        zIndex: 2000,
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 -10px 30px rgba(0,0,0,0.2)'
+      }}>
+        {menuItems.slice(0, 5).map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link key={item.href} href={item.href} style={{ textDecoration: 'none', color: isActive ? '#fbbf24' : 'rgba(255,255,255,0.6)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+              <div style={{ transform: isActive ? 'scale(1.1) translateY(-2px)' : 'scale(1)', transition: 'all 0.2s' }}>
+                {item.icon}
+              </div>
+              <span style={{ fontSize: '0.6rem', fontWeight: 800 }}>{item.label}</span>
+            </Link>
+          );
+        })}
+        <button onClick={() => signOut()} style={{ background: 'none', border: 'none', color: '#f87171' }}>
+          <LogOut size={22} />
+        </button>
+      </nav>
+    );
+  }
 
   return (
     <motion.aside
@@ -195,7 +237,7 @@ export default function Sidebar() {
                style={{ flex: 1, overflow: 'hidden' }}
              >
                 <div style={{ fontWeight: 900, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name || 'المدير'}</div>
-                <div style={{ fontSize: '0.65rem', color: '#fbbf24', fontWeight: 800 }}>التحكم الكامل</div>
+                <div style={{ fontSize: '0.65rem', color: '#fbbf24', fontWeight: 800 }}>{user?.role === 'ADMIN' ? 'التحكم الكامل' : 'مراقب نظام'}</div>
              </motion.div>
            )}
         </motion.div>
@@ -246,6 +288,23 @@ export default function Sidebar() {
       >
         {isCollapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
       </motion.button>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media (max-width: 768px) {
+          main {
+            padding: 1rem !important;
+            padding-bottom: 100px !important;
+          }
+          header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1.5rem !important;
+          }
+          h1 { font-size: 1.8rem !important; }
+          .stat-grid { grid-template-columns: 1fr !important; }
+          .card-grid { grid-template-columns: 1fr !important; }
+        }
+      `}} />
     </motion.aside>
   );
 }

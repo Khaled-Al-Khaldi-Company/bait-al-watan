@@ -237,7 +237,7 @@ export default function FinancesPage() {
           </div>
         </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+      <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
         <StatCard title="إجمالي مساهمات الشركاء" value={`$${totalContributions.toLocaleString()}`} icon={<Users size={24} />} color="#064e3b" />
         <StatCard 
           title="رصيد الصندوق (كاش فعلي)" 

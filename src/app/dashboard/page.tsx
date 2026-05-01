@@ -168,6 +168,7 @@ export default function Dashboard() {
         {/* Row 1: Main Stats */}
         <motion.div 
           variants={itemVariants}
+          className="stat-grid"
           style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem', marginBottom: '0.8rem' }}
         >
           <StatCard
@@ -197,7 +198,7 @@ export default function Dashboard() {
           <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem', paddingRight: '0.3rem' }}>
             تفاصيل سداد الهيئة
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem' }}>
+          <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem' }}>
             <StatCard
               title="مدفوع مباشر للهيئة 🏦"
               value={`$${(stats?.totalAuthorityDirect || 0).toLocaleString()}`}
@@ -218,7 +219,7 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+        <div className="card-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
           {/* Projects Table */}
           <motion.div variants={itemVariants}>
             <Card style={{ padding: '2.5rem', borderRadius: '24px' }}>
