@@ -50,6 +50,8 @@ export default function ProjectDetailsPage() {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [targetPhaseId, setTargetPhaseId] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -253,6 +255,75 @@ export default function ProjectDetailsPage() {
     }
   };
 
+  const handleInitTimeline = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/projects/${id}/phases/init`, { method: 'POST' });
+      if (res.ok) {
+        fetchProject();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'فشل تهيئة المسار الزمني');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAddTask = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!targetPhaseId) return;
+    setSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    const title = formData.get('title');
+
+    try {
+      const res = await fetch(`/api/projects/${id}/phases/${targetPhaseId}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title })
+      });
+      if (res.ok) {
+        setShowAddTask(false);
+        setTargetPhaseId(null);
+        fetchProject();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleToggleTask = async (taskId: string, isCompleted: boolean) => {
+    try {
+      const res = await fetch(`/api/tasks`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: taskId, isCompleted })
+      });
+      if (res.ok) {
+        fetchProject();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذه المهمة؟')) return;
+    try {
+      const res = await fetch(`/api/tasks?id=${taskId}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchProject();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
       <Loader2 className="animate-spin" size={40} color="#064e3b" />
@@ -380,7 +451,19 @@ export default function ProjectDetailsPage() {
         >
           {activeTab === 'overview' && <OverviewTab project={project} progress={progress} />}
           {activeTab === 'partners' && <PartnersTab project={project} onAdd={() => setShowAddPartner(true)} onDelete={handleDeletePartner} />}
-          {activeTab === 'timeline' && <TimelineTab activities={activities} />}
+          {activeTab === 'timeline' && (
+            <TimelineTab 
+              project={project} 
+              onInit={handleInitTimeline} 
+              onAddTask={(phaseId: string) => {
+                setTargetPhaseId(phaseId);
+                setShowAddTask(true);
+              }}
+              onToggleTask={handleToggleTask}
+              onDeleteTask={handleDeleteTask}
+              submitting={submitting}
+            />
+          )}
           {activeTab === 'finances' && (
             <FinancesTab 
               project={project} 
@@ -591,6 +674,20 @@ export default function ProjectDetailsPage() {
                 .radio-card:has(input:checked) { border-color: #064e3b !important; background: #064e3b05 !important; }
                 .radio-card input { accent-color: #064e3b; width: 18px; height: 18px; }
               `}} />
+            </Modal>
+          )}
+          {showAddTask && (
+            <Modal onClose={() => { setShowAddTask(false); setTargetPhaseId(null); }}>
+              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '2rem' }}>إضافة مهمة جديدة</h2>
+              <form onSubmit={handleAddTask} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={formGroup}>
+                  <label style={formLabel}>عنوان المهمة</label>
+                  <input name="title" required autoFocus style={formInput} placeholder="مثال: تقديم طلب الحجز" />
+                </div>
+                <Button type="submit" disabled={submitting} style={{ height: '3.5rem', borderRadius: '14px', background: '#064e3b', color: 'white', fontWeight: 800 }}>
+                   {submitting ? <Loader2 className="animate-spin" /> : 'إضافة المهمة'}
+                </Button>
+              </form>
             </Modal>
           )}
         </AnimatePresence>
@@ -812,43 +909,95 @@ function PartnersTab({ project, onAdd, onDelete }: any) {
   );
 }
 
-function TimelineTab({ activities }: any) {
-  return (
-    <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
-      <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '3rem' }}>سجل الأنشطة والمسار الزمني 🕒</h3>
-      <div style={{ position: 'relative', paddingRight: '2rem' }}>
-        <div style={{ position: 'absolute', right: '1.5rem', top: 0, bottom: 0, width: '2px', background: '#f1f5f9' }} />
-        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '2.5rem' }}>
-          {activities?.map((activity: any, idx: number) => (
-            <motion.div 
-              key={activity.id}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              style={{ display: 'flex', gap: '2rem', position: 'relative' }}
-            >
-              <div style={{ 
-                width: '16px', height: '16px', borderRadius: '50%', background: '#064e3b',
-                zIndex: 10, marginRight: '-23px', marginTop: '10px',
-                boxShadow: '0 0 0 5px white, 0 0 0 10px #f0fdf4'
-              }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <h4 style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b' }}>{activity.description}</h4>
-                  <span style={{ fontSize: '0.8rem', opacity: 0.5, fontWeight: 700 }}>
-                    {new Date(activity.createdAt).toLocaleString('ar-EG')}
-                  </span>
-                </div>
-                <p style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>بواسطة: {activity.user?.name}</p>
-              </div>
-            </motion.div>
-          ))}
-          {(!activities || activities.length === 0) && (
-            <p style={{ textAlign: 'center', opacity: 0.4, padding: '3rem' }}>لا توجد أنشطة مسجلة بعد.</p>
-          )}
+function TimelineTab({ project, onInit, onAddTask, onToggleTask, onDeleteTask, submitting }: any) {
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as any)?.role === 'ADMIN' || (session?.user?.name || '').includes('مدير');
+  const phases = project?.phases || [];
+
+  if (phases.length === 0) {
+    return (
+      <Card style={{ padding: '4rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white', textAlign: 'center' }}>
+        <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: '#064e3b10', color: '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+          <Activity size={40} />
         </div>
+        <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '1rem' }}>تهيئة المسار الزمني</h3>
+        <p style={{ color: '#64748b', fontSize: '1.1rem', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem' }}>
+          لم يتم تحديد مراحل لهذا المشروع بعد. يمكنك البدء بتهيئة المراحل الافتراضية (البدء، التقديم، التخصيص، الاستلام) لمتابعة سير العمل.
+        </p>
+        {isAdmin && (
+          <Button onClick={onInit} disabled={submitting} style={{ height: '3.5rem', padding: '0 2.5rem', borderRadius: '16px', background: '#064e3b', color: 'white', fontWeight: 800 }}>
+            {submitting ? <Loader2 className="animate-spin" /> : 'بدء تهيئة المسار الزمني ✅'}
+          </Button>
+        )}
+      </Card>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+        {phases.map((phase: any, idx: number) => (
+          <Card key={phase.id} style={{ padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', background: 'white', display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: phase.status === 'COMPLETED' ? '#10b981' : '#064e3b10', color: phase.status === 'COMPLETED' ? 'white' : '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem' }}>
+                  {idx + 1}
+                </div>
+                <h4 style={{ fontWeight: 900, fontSize: '1.1rem', color: '#0f172a' }}>{phase.name}</h4>
+              </div>
+              <Badge style={{ background: getPhaseColor(phase.status) + '15', color: getPhaseColor(phase.status), border: 'none', fontWeight: 800 }}>
+                {getPhaseLabel(phase.status)}
+              </Badge>
+            </div>
+
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {phase.tasks?.map((task: any) => (
+                <motion.div 
+                  key={task.id}
+                  whileHover={{ x: -5 }}
+                  style={{ 
+                    padding: '1rem', borderRadius: '16px', background: '#f8fafc', 
+                    border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '0.8rem' 
+                  }}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={task.isCompleted} 
+                    onChange={(e) => onToggleTask(task.id, e.target.checked)}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#064e3b' }}
+                  />
+                  <span style={{ 
+                    flex: 1, fontWeight: 700, fontSize: '0.95rem', 
+                    textDecoration: task.isCompleted ? 'line-through' : 'none',
+                    opacity: task.isCompleted ? 0.5 : 1
+                  }}>
+                    {task.title}
+                  </span>
+                  {isAdmin && (
+                    <button onClick={() => onDeleteTask(task.id)} style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '0.2rem', opacity: 0.3 }}>
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </motion.div>
+              ))}
+              {(!phase.tasks || phase.tasks.length === 0) && (
+                <p style={{ textAlign: 'center', opacity: 0.3, fontSize: '0.85rem', padding: '1rem' }}>لا توجد مهام حالياً</p>
+              )}
+            </div>
+
+            {isAdmin && (
+              <Button 
+                onClick={() => onAddTask(phase.id)} 
+                variant="outline" 
+                style={{ marginTop: '1.5rem', borderRadius: '12px', height: '3rem', borderStyle: 'dashed', borderColor: '#cbd5e1', fontWeight: 700, gap: '0.5rem', color: '#64748b' }}
+              >
+                <Plus size={16} /> إضافة مهمة
+              </Button>
+            )}
+          </Card>
+        ))}
       </div>
-    </Card>
+    </div>
   );
 }
 
