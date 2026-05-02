@@ -28,7 +28,9 @@ export default function MessagesPage() {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchProjects();
+    const params = new URLSearchParams(window.location.search);
+    const pId = params.get('projectId');
+    fetchProjects(pId);
   }, []);
 
   useEffect(() => {
@@ -46,13 +48,20 @@ export default function MessagesPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const fetchProjects = async () => {
+  const fetchProjects = async (preSelectedId?: string | null) => {
     setLoading(true);
     try {
       const res = await fetch('/api/projects');
       const data = await res.json();
       setProjects(data);
-      if (data.length > 0) setSelectedProject(data[0]);
+      
+      if (preSelectedId) {
+        const found = data.find((p: any) => p.id === preSelectedId);
+        if (found) setSelectedProject(found);
+        else if (data.length > 0) setSelectedProject(data[0]);
+      } else if (data.length > 0) {
+        setSelectedProject(data[0]);
+      }
     } catch (err) {
       console.error(err);
     } finally {

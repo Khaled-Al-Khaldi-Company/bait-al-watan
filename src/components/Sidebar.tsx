@@ -40,6 +40,7 @@ export default function Sidebar() {
     { href: '/dashboard',           icon: <LayoutDashboard size={22} />, label: 'الرئيسية' },
     { href: '/dashboard/analytics', icon: <BarChart3 size={22} />,       label: 'السيولة' },
     { href: '/dashboard/projects',  icon: <Landmark size={22} />,        label: 'الحجوزات' },
+    { href: '/dashboard/messages',  icon: <MessageSquare size={22} />,   label: 'المحادثات' },
     { href: '/dashboard/reservations', icon: <Users size={22} />,        label: 'الحصص' },
     ...(user?.role !== 'VIEWER' ? [{ href: '/dashboard/members', icon: <Users size={22} />, label: 'الأعضاء' }] : []),
     { href: '/dashboard/finances',  icon: <Wallet size={22} />,          label: 'المالية' },

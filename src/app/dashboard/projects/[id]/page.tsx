@@ -16,7 +16,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import DocumentExplorer from '@/components/DocumentExplorer';
 
-type TabType = 'overview' | 'partners' | 'timeline' | 'finances' | 'documents' | 'settings';
+type TabType = 'overview' | 'partners' | 'timeline' | 'finances' | 'documents' | 'settings' | 'messages';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -453,6 +453,7 @@ export default function ProjectDetailsPage() {
           <TabButton active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')} icon={<Activity size={18} />} label="المسار الزمني" />
           <TabButton active={activeTab === 'finances'} onClick={() => setActiveTab('finances')} icon={<History size={18} />} label="الحركة المالية" />
           <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<FileText size={18} />} label="المستندات" />
+          <TabButton active={activeTab === 'messages'} onClick={() => setActiveTab('messages')} icon={<MessageSquare size={18} />} label="المحادثات" />
           <TabButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings size={18} />} label="الإعدادات" />
         </motion.div>
 
@@ -493,6 +494,7 @@ export default function ProjectDetailsPage() {
             />
           )}
           {activeTab === 'documents' && <DocumentsTab project={project} />}
+          {activeTab === 'messages' && <MessagesTab project={project} />}
           {activeTab === 'settings' && <SettingsTab project={project} onSubmit={handleUpdateProject} onDelete={handleDeleteProject} submitting={submitting} />}
         </motion.div>
 
@@ -1115,6 +1117,25 @@ function DocumentsTab({ project }: any) {
   return (
     <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
       <DocumentExplorer projectId={project.id} />
+    </Card>
+  );
+}
+
+function MessagesTab({ project }: any) {
+  return (
+    <Card style={{ padding: '4rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white', textAlign: 'center' }}>
+      <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: '#064e3b10', color: '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+        <MessageSquare size={40} />
+      </div>
+      <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '1rem' }}>مكتب التواصل الموحد 💬</h3>
+      <p style={{ color: '#64748b', fontSize: '1.1rem', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem' }}>
+        يمكنك التواصل مباشرة مع الإدارة والشركاء الآخرين في هذا المشروع من خلال نظام المحادثات الموحد.
+      </p>
+      <Link href={`/dashboard/messages?projectId=${project.id}`}>
+        <Button style={{ height: '3.5rem', padding: '0 2.5rem', borderRadius: '16px', background: '#064e3b', color: 'white', fontWeight: 800 }}>
+          الانتقال لغرفة المحادثة 🚀
+        </Button>
+      </Link>
     </Card>
   );
 }
