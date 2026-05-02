@@ -9,6 +9,7 @@ import {
 import { TrendingUp, PieChart as PieIcon, Activity, ChevronLeft, Loader2, DollarSign, Target } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Sidebar from '@/components/Sidebar';
 
 const COLORS = ['#064e3b', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
@@ -29,14 +30,16 @@ export default function KPIReport() {
   if (loading) return <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Loader2 className="animate-spin" size={48} color="#064e3b" /></div>;
 
   return (
-    <div style={{ padding: '2rem', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
-      <header style={{ marginBottom: '3rem' }}>
-        <div onClick={() => router.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: 0.5, fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-            العودة للصفحة السابقة <ChevronLeft size={14} />
-        </div>
-        <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#064e3b' }}>تحليل مؤشرات الأداء (KPIs) 📈</h1>
-        <p style={{ opacity: 0.6 }}>نظرة شاملة على النمو، التحصيل، وتوزيع المشاريع.</p>
-      </header>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
+      <Sidebar />
+      <main className="main-content-layout" style={{ flex: 1, padding: '2rem' }}>
+        <header style={{ marginBottom: '3rem' }}>
+          <div onClick={() => router.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: 0.5, fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+              العودة للصفحة السابقة <ChevronLeft size={14} />
+          </div>
+          <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#064e3b' }}>تحليل مؤشرات الأداء (KPIs) 📈</h1>
+          <p style={{ opacity: 0.6 }}>نظرة شاملة على النمو، التحصيل، وتوزيع المشاريع.</p>
+        </header>
 
       {/* Highlights */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
@@ -121,6 +124,7 @@ export default function KPIReport() {
            </div>
         </Card>
       </div>
+      </main>
     </div>
   );
 }

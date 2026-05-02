@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
+import Sidebar from '@/components/Sidebar';
+
 export default function ReservationsReport() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -36,27 +38,29 @@ export default function ReservationsReport() {
   if (loading) return <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Loader2 className="animate-spin" /></div>;
 
   return (
-    <div style={{ padding: '2rem', direction: 'rtl' }}>
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; padding: 0 !important; margin: 0 !important; direction: rtl !important; }
-          .print-container { padding: 10px !important; margin: 0 !important; width: 100% !important; }
-          table { width: 100% !important; font-size: 9px !important; border-collapse: collapse !important; }
-          th, td { padding: 4px !important; border: 1px solid #000 !important; text-align: right !important; }
-          .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
-          h1 { font-size: 16px !important; margin-bottom: 5px !important; }
-          .badge-print { border: 1px solid #000 !important; padding: 2px 4px !important; }
-        }
-      `}</style>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
+      <Sidebar />
+      <main className="main-content-layout" style={{ flex: 1, padding: '2rem' }}>
+        <style>{`
+          @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; padding: 0 !important; margin: 0 !important; direction: rtl !important; }
+            .print-container { padding: 10px !important; margin: 0 !important; width: 100% !important; }
+            table { width: 100% !important; font-size: 9px !important; border-collapse: collapse !important; }
+            th, td { padding: 4px !important; border: 1px solid #000 !important; text-align: right !important; }
+            .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+            h1 { font-size: 16px !important; margin-bottom: 5px !important; }
+            .badge-print { border: 1px solid #000 !important; padding: 2px 4px !important; }
+          }
+        `}</style>
 
-      <header className="no-print" style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div onClick={() => router.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', opacity: 0.6, marginBottom: '0.75rem' }}>
-             العودة للصفحة السابقة <ChevronLeft size={14} />
+        <header className="no-print" style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div onClick={() => router.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', opacity: 0.6, marginBottom: '0.75rem' }}>
+               العودة للصفحة السابقة <ChevronLeft size={14} />
+            </div>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: 900 }}>تقرير المساهمات والمدفوعات الشامل 🏢</h1>
           </div>
-          <h1 style={{ fontSize: '2.2rem', fontWeight: 900 }}>تقرير المساهمات والمدفوعات الشامل 🏢</h1>
-        </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
            <Button onClick={handlePrint} style={{ background: '#1e40af', borderRadius: '16px', height: '3.5rem', padding: '0 2rem' }}>
              <Printer size={20} /> طباعة التقرير
@@ -147,12 +151,13 @@ export default function ReservationsReport() {
         </div>
       </div>
 
-      <style jsx>{`
-        .visible-print-only { display: none; }
-        @media print {
-          .visible-print-only { display: block !important; }
-        }
-      `}</style>
+        <style jsx>{`
+          .visible-print-only { display: none; }
+          @media print {
+            .visible-print-only { display: block !important; }
+          }
+        `}</style>
+      </main>
     </div>
   );
 }

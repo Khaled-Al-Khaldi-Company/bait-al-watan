@@ -5,6 +5,7 @@ import { Card, Button } from '@/components/ui';
 import { Clock, User, ArrowLeft, Loader2, RefreshCcw, Activity, Wallet, Landmark, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Sidebar from '@/components/Sidebar';
 
 export default function ActivityReport() {
   const router = useRouter();
@@ -29,19 +30,21 @@ export default function ActivityReport() {
   }, []);
 
   return (
-    <div style={{ padding: '2rem', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
-      <header style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div onClick={() => router.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: 0.5, fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-             العودة للصفحة السابقة <ChevronLeft size={14} />
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', direction: 'rtl' }}>
+      <Sidebar />
+      <main className="main-content-layout" style={{ flex: 1, padding: '2rem' }}>
+        <header style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div onClick={() => router.back()} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: 0.5, fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+               العودة للصفحة السابقة <ChevronLeft size={14} />
+            </div>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#0f172a' }}>سجل النشاط والعمليات 🕒</h1>
+            <p style={{ opacity: 0.6 }}>تتبع زمني لجميع التحركات المالية والإدارية داخل النظام.</p>
           </div>
-          <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#0f172a' }}>سجل النشاط والعمليات 🕒</h1>
-          <p style={{ opacity: 0.6 }}>تتبع زمني لجميع التحركات المالية والإدارية داخل النظام.</p>
-        </div>
-        <Button onClick={fetchActivities} variant="secondary" style={{ borderRadius: '12px' }}>
-          <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /> تحديث السجل
-        </Button>
-      </header>
+          <Button onClick={fetchActivities} variant="secondary" style={{ borderRadius: '12px' }}>
+            <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /> تحديث السجل
+          </Button>
+        </header>
 
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}>
@@ -82,6 +85,7 @@ export default function ActivityReport() {
           )}
         </div>
       )}
+      </main>
     </div>
   );
 }

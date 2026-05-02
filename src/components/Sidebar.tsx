@@ -43,6 +43,7 @@ export default function Sidebar() {
     { href: '/dashboard/reservations', icon: <Users size={22} />,        label: 'الحصص' },
     ...(user?.role !== 'VIEWER' ? [{ href: '/dashboard/members', icon: <Users size={22} />, label: 'الأعضاء' }] : []),
     { href: '/dashboard/finances',  icon: <Wallet size={22} />,          label: 'المالية' },
+    { href: '/dashboard/reports',   icon: <FileText size={22} />,        label: 'التقارير' },
     { href: '/dashboard/resources', icon: <Globe size={22} />,           label: 'روابط' },
     { href: '/dashboard/documents', icon: <FileText size={22} />,        label: 'الأرشيف' },
   ];
