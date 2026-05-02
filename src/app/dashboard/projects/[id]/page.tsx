@@ -324,6 +324,21 @@ export default function ProjectDetailsPage() {
     }
   };
 
+  const handleUpdatePhaseStatus = async (phaseId: string, status: string) => {
+    try {
+      const res = await fetch(`/api/projects/${id}/phases/${phaseId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        fetchProject();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
       <Loader2 className="animate-spin" size={40} color="#064e3b" />
@@ -461,6 +476,7 @@ export default function ProjectDetailsPage() {
               }}
               onToggleTask={handleToggleTask}
               onDeleteTask={handleDeleteTask}
+              onUpdatePhaseStatus={handleUpdatePhaseStatus}
               submitting={submitting}
             />
           )}
@@ -909,7 +925,7 @@ function PartnersTab({ project, onAdd, onDelete }: any) {
   );
 }
 
-function TimelineTab({ project, onInit, onAddTask, onToggleTask, onDeleteTask, submitting }: any) {
+function TimelineTab({ project, onInit, onAddTask, onToggleTask, onDeleteTask, onUpdatePhaseStatus, submitting }: any) {
   const { data: session } = useSession();
   const isAdmin = (session?.user as any)?.role === 'ADMIN' || (session?.user?.name || '').includes('مدير');
   const phases = project?.phases || [];
@@ -937,17 +953,34 @@ function TimelineTab({ project, onInit, onAddTask, onToggleTask, onDeleteTask, s
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
         {phases.map((phase: any, idx: number) => (
-          <Card key={phase.id} style={{ padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', background: 'white', display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <Card key={phase.id} style={{ padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', background: 'white', display: 'flex', flexDirection: 'column', height: '100%', borderTop: phase.status === 'ACTIVE' ? '4px solid #10b981' : '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: phase.status === 'COMPLETED' ? '#10b981' : '#064e3b10', color: phase.status === 'COMPLETED' ? 'white' : '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: phase.status === 'COMPLETED' ? '#10b981' : (phase.status === 'ACTIVE' ? '#064e3b' : '#064e3b10'), color: (phase.status === 'COMPLETED' || phase.status === 'ACTIVE') ? 'white' : '#064e3b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem' }}>
                   {idx + 1}
                 </div>
                 <h4 style={{ fontWeight: 900, fontSize: '1.1rem', color: '#0f172a' }}>{phase.name}</h4>
               </div>
-              <Badge style={{ background: getPhaseColor(phase.status) + '15', color: getPhaseColor(phase.status), border: 'none', fontWeight: 800 }}>
-                {getPhaseLabel(phase.status)}
-              </Badge>
+              
+              {isAdmin ? (
+                <select 
+                  value={phase.status} 
+                  onChange={(e) => onUpdatePhaseStatus(phase.id, e.target.value)}
+                  style={{ 
+                    padding: '0.4rem 0.8rem', borderRadius: '10px', border: '1px solid #e2e8f0', 
+                    fontSize: '0.8rem', fontWeight: 800, color: getPhaseColor(phase.status),
+                    background: getPhaseColor(phase.status) + '10', cursor: 'pointer'
+                  }}
+                >
+                  <option value="PENDING">معلق</option>
+                  <option value="ACTIVE">جاري حالياً</option>
+                  <option value="COMPLETED">مكتمل</option>
+                </select>
+              ) : (
+                <Badge style={{ background: getPhaseColor(phase.status) + '15', color: getPhaseColor(phase.status), border: 'none', fontWeight: 800 }}>
+                  {getPhaseLabel(phase.status)}
+                </Badge>
+              )}
             </div>
 
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
