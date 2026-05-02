@@ -493,7 +493,7 @@ export default function ProjectDetailsPage() {
                     {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                   </select>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                    <div style={formGroup}>
                       <label style={formLabel}>النسبة (%)</label>
                       <input name="percentage" type="number" step="0.1" style={formInput} placeholder="50" />
@@ -516,7 +516,7 @@ export default function ProjectDetailsPage() {
                 {selectedTransaction ? 'تعديل عملية مالية' : 'تسجيل عملية مالية جديدة'}
               </h2>
               <form onSubmit={handleAddTransaction} style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.2rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                    <div style={formGroup}>
                       <label style={formLabel}>نوع العملية</label>
                       <select name="type" required defaultValue={selectedTransaction?.type || 'MEMBER_CONTRIBUTION'} style={formInput}>
@@ -537,7 +537,7 @@ export default function ProjectDetailsPage() {
                    </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                    <div style={formGroup}>
                       <label style={formLabel}>المبلغ الإجمالي ($)</label>
                       <input name="amount" type="number" step="0.01" required defaultValue={selectedTransaction ? Math.abs(selectedTransaction.amount) : ''} style={formInput} placeholder="0.00" />
@@ -548,7 +548,7 @@ export default function ProjectDetailsPage() {
                    </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                    <div style={formGroup}>
                       <label style={formLabel}>التاريخ</label>
                       <input name="date" type="date" required defaultValue={selectedTransaction?.date ? new Date(selectedTransaction.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} style={formInput} />
@@ -587,7 +587,7 @@ export default function ProjectDetailsPage() {
               </div>
 
               <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.2rem' }}>
                   <div style={formGroup}>
                     <label style={formLabel}>إلى مشروع (الوجهة)</label>
                     <select name="targetProjectId" required style={formInput}>
@@ -1097,7 +1097,7 @@ function SettingsTab({ project, onSubmit, onDelete, submitting }: any) {
       <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
         <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem' }}>تعديل بيانات الحجز</h3>
         <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column' as const, gap: '1.5rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
             <div style={formGroup}>
               <label style={formLabel}>اسم الحجز</label>
               <input name="name" defaultValue={project.name} style={inputStyle} required />
@@ -1205,6 +1205,8 @@ function DataField({ label, value }: any) {
 }
 
 const inputStyle = {
+  width: '100%',
+  boxSizing: 'border-box' as const,
   padding: '1rem',
   borderRadius: '14px',
   border: '1px solid #e2e8f0',
@@ -1248,7 +1250,7 @@ const closeButton: any = {
 
 const formGroup = { display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' };
 const formLabel = { fontWeight: 800, fontSize: '0.9rem', color: '#64748b' };
-const formInput = { padding: '1rem', borderRadius: '14px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' };
+const formInput = { width: '100%', boxSizing: 'border-box' as const, padding: '1rem', borderRadius: '14px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '1rem', fontWeight: 600, outline: 'none' };
 
 function getStatusLabel(status: string) {
   const labels: any = { 'UNDER_STUDY': 'تحت الدراسة', 'SUBMITTED': 'تم التقديم', 'ALLOCATED': 'تم التخصيص', 'IN_PROGRESS': 'قيد التنفيذ', 'COMPLETED': 'مكتمل' };
