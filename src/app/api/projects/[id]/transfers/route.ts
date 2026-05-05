@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
@@ -41,7 +41,7 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!(session?.user as any)?.id) {
       return NextResponse.json({ error: 'غير مصرح لك بالوصول' }, { status: 401 });
     }
 
@@ -56,7 +56,7 @@ export async function POST(
     const transfer = await prisma.transferTracking.create({
       data: {
         projectId: id,
-        userId: session.user.id,
+        userId: (session!.user as any).id,
         transferType: body.transferType || 'SWIFT',
         fromAccount: body.fromAccount,
         toAccountName: body.toAccountName,

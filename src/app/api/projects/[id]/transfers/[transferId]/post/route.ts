@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
@@ -36,7 +36,7 @@ export async function POST(
       prisma.transaction.create({
         data: {
           projectId: id,
-          userId: session.user.id,
+          userId: (session.user as any).id,
           type: 'AUTHORITY_PAYMENT',
           amount: transfer.transferAmount, // المبلغ الإجمالي المدفوع
           officialAmount: transfer.receivedAmount, // المبلغ المعترف به من الهيئة
