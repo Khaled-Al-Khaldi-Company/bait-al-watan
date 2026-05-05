@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
-import { uploadFile } from '@/lib/upload';
+import { uploadFile } from '@/lib/upload_new';
 
 export async function POST(req: NextRequest) {
   try {

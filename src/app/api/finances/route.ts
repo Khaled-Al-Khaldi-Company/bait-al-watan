@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
 import prisma from "@/lib/prisma";
-import { uploadFile } from '@/lib/upload';
+import { uploadFile } from '@/lib/upload_new';
 
 async function handleFinanceRequest(req: NextRequest, isPatch = false) {
   try {

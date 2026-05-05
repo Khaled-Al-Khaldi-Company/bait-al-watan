@@ -198,7 +198,19 @@ export default function DocumentExplorer({ projectId }: { projectId?: string }) 
                           <button onClick={() => handleDeleteDoc(doc.id)} className="action-btn" title="حذف" style={{ color: '#ef4444' }}><Trash2 size={18} /></button>
                         </>
                       )}
-                      <a href={doc.url} download className="action-btn" title="تحميل"><Download size={18} /></a>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const downloadUrl = doc.url.includes('cloudinary') 
+                            ? doc.url.replace('/upload/', '/upload/fl_attachment/') 
+                            : doc.url;
+                          window.open(downloadUrl, '_blank');
+                        }} 
+                        className="action-btn" 
+                        title="تحميل"
+                      >
+                        <Download size={18} />
+                      </button>
                    </div>
                 </div>
                 
@@ -272,8 +284,11 @@ export default function DocumentExplorer({ projectId }: { projectId?: string }) 
                  <button onClick={() => setPreviewDoc(null)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f8fafc', border: 'none', cursor: 'pointer' }}><X size={22} /></button>
               </div>
               <div style={{ flex: 1, background: '#f1f5f9', padding: '1rem' }}>
-                 {previewDoc.url.toLowerCase().endsWith('.pdf') ? (
-                   <iframe src={previewDoc.url} style={{ width: '100%', height: '100%', border: 'none', borderRadius: '16px' }} />
+                 {previewDoc.url.toLowerCase().includes('.pdf') || previewDoc.url.toLowerCase().includes('pdf') ? (
+                    <iframe 
+                      src={previewDoc.url.includes('cloudinary') && !previewDoc.url.toLowerCase().endsWith('.pdf') ? `${previewDoc.url}.pdf` : previewDoc.url} 
+                      style={{ width: '100%', height: '100%', border: 'none', borderRadius: '16px' }} 
+                    />
                  ) : (
                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <img src={previewDoc.url} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '16px', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }} />
