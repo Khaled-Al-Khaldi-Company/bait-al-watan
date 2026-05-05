@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, ArrowRight, CheckCircle, Clock, Save, Edit, Trash2, Send, X, RefreshCw } from 'lucide-react';
+import { Plus, ArrowRight, CheckCircle, Clock, Save, Edit, Trash2, Send, X, RefreshCw, Activity } from 'lucide-react';
 
 interface TransferTracking {
   id: string;
@@ -178,10 +178,51 @@ export default function TransferTrackingTab({ projectId }: { projectId: string }
     return `${hours} ساعة`;
   };
 
+  // Calculate average duration
+  const completedTransfers = transfers.filter(t => t.arrivalDate && t.initiationDate);
+  const avgDurationDays = completedTransfers.length > 0 
+    ? completedTransfers.reduce((acc, t) => {
+        const diff = new Date(t.arrivalDate!).getTime() - new Date(t.initiationDate).getTime();
+        return acc + (diff / (1000 * 60 * 60 * 24));
+      }, 0) / completedTransfers.length
+    : 0;
+
   if (loading) return <div className="p-8 text-center"><RefreshCw className="animate-spin inline-block text-blue-500" /> جاري التحميل...</div>;
 
   return (
     <div className="space-y-6">
+      {/* Top Cards for Advice and Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Smart Advice Card */}
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-center">
+          <div className="flex items-center gap-2 mb-3 text-emerald-700 font-bold">
+            <Clock size={20} />
+            <h3 className="text-lg">نصيحة التحويل الذكية</h3>
+          </div>
+          <p className="text-slate-800 font-bold text-xl leading-relaxed">
+            يفضل التحويل قبل 1 أيام من موعد الإغلاق لضمان الأولوية.
+          </p>
+        </div>
+
+        {/* Average Duration Card */}
+        <div className="bg-emerald-800 text-white p-6 rounded-3xl shadow-lg flex flex-col justify-center relative overflow-hidden">
+          <div className="absolute left-0 bottom-0 opacity-10">
+             <Activity size={120} style={{ transform: 'translate(-20%, 20%)' }} />
+          </div>
+          <div className="flex justify-between items-start mb-2 relative z-10">
+            <h3 className="text-emerald-100 font-bold text-lg">متوسط مدة وصول الحوالة</h3>
+            <Activity size={24} className="text-emerald-300" />
+          </div>
+          <div className="relative z-10">
+            <span className="text-4xl font-black">{avgDurationDays.toFixed(1)}</span>
+            <span className="text-xl font-bold mr-2 text-emerald-200">أيام</span>
+          </div>
+          <p className="text-emerald-200/70 text-sm mt-3 relative z-10">
+            بناءً على الحوالات الموثقة تاريخياً لهذا المشروع.
+          </p>
+        </div>
+      </div>
+
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
         <div>
           <h2 className="text-xl font-bold text-slate-800">تتبع الحوالات الصادرة (SWIFT)</h2>
