@@ -26,6 +26,7 @@ model User {
   chatMessages  ChatMessage[]
   activityLogs  ActivityLog[]
   tasks         Task[]    @relation("AssignedTasks")
+  transferTrackings TransferTracking[]
 }
 
 model Project {
@@ -60,6 +61,7 @@ model Project {
   transactions  Transaction[]
   obligations   Obligation[]
   chatMessages  ChatMessage[]
+  transferTrackings TransferTracking[]
 }
 
 model ProjectParticipation {
@@ -180,4 +182,42 @@ model ResourceLink {
   icon        String?  // lucide icon name
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model TransferTracking {
+  id               String    @id @default(cuid())
+  projectId        String
+  userId           String
+  
+  // Basic Info
+  transferType     String    @default("SWIFT") // نوع التحويل
+  fromAccount      String    // تحويل من
+  toAccountName    String    // تحويل إلى (اسم الجهة)
+  toAccountNumber  String    // رقم الحساب
+  
+  // Amounts
+  transferAmount   Float     // مبلغ الحوالة
+  transferCurrency String    @default("SAR")
+  receivedAmount   Float?    // المبلغ المستلم
+  receivedCurrency String    @default("USD")
+  vatAmount        Float     @default(0) // ضريبة القيمة المضافة
+  feeAmount        Float     @default(0) // رسوم التحويل
+  
+  // Additional details
+  reason           String?   // سبب التحويل
+  note             String?   // ملاحظات
+  
+  // Bank details
+  referenceNumber  String?   // الرقم المرجعي أو السويفت
+  initiationDate   DateTime  // وقت وتاريخ الإرسال
+  arrivalDate      DateTime? // وقت الوصول المستغرق
+  
+  status           String    @default("PENDING") // PENDING, COMPLETED, POSTED
+  transactionId    String?   @unique // للربط مع جدول العمليات المالية بعد الترحيل
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  project          Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user             User      @relation(fields: [userId], references: [id])
 }

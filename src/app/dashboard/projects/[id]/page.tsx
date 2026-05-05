@@ -16,8 +16,10 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import DocumentExplorer from '@/components/DocumentExplorer';
+import TransferTrackingTab from '@/components/TransferTrackingTab';
+import { Send } from 'lucide-react';
 
-type TabType = 'overview' | 'partners' | 'timeline' | 'finances' | 'documents' | 'settings' | 'messages';
+type TabType = 'overview' | 'partners' | 'timeline' | 'transfers' | 'finances' | 'documents' | 'settings' | 'messages';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -452,6 +454,7 @@ export default function ProjectDetailsPage() {
           <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={<Layers size={18} />} label="نظرة عامة" />
           <TabButton active={activeTab === 'partners'} onClick={() => setActiveTab('partners')} icon={<Users size={18} />} label="حصص الشركاء" />
           <TabButton active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')} icon={<Activity size={18} />} label="المسار الزمني" />
+          <TabButton active={activeTab === 'transfers'} onClick={() => setActiveTab('transfers')} icon={<Send size={18} />} label="تتبع الحوالات" />
           <TabButton active={activeTab === 'finances'} onClick={() => setActiveTab('finances')} icon={<History size={18} />} label="الحركة المالية" />
           <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<FileText size={18} />} label="المستندات" />
           <TabButton active={activeTab === 'messages'} onClick={() => setActiveTab('messages')} icon={<MessageSquare size={18} />} label="المحادثات" />
@@ -482,6 +485,7 @@ export default function ProjectDetailsPage() {
               submitting={submitting}
             />
           )}
+          {activeTab === 'transfers' && <TransferTrackingTab projectId={id as string} />}
           {activeTab === 'finances' && (
             <FinancesTab 
               project={project} 
