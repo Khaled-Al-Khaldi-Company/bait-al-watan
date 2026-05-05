@@ -582,6 +582,34 @@ export default function ProjectDetailsPage() {
                   <input name="purpose" required defaultValue={selectedTransaction?.purpose || ''} style={formInput} placeholder="مثال: القسط الأول - الحجز الرسمي" />
                 </div>
 
+                <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                   <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#475569', marginBottom: '0.5rem' }}>تفاصيل التحويل البنكي (اختياري)</h4>
+                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+                      <div style={formGroup}>
+                         <label style={formLabel}>اسم البنك</label>
+                         <input name="bankName" defaultValue={selectedTransaction?.bankName || ''} style={formInput} placeholder="مثال: بنك الراجحي" />
+                      </div>
+                      <div style={formGroup}>
+                         <label style={formLabel}>اسم صاحب الحساب</label>
+                         <input name="accountHolder" defaultValue={selectedTransaction?.accountHolder || ''} style={formInput} placeholder="الاسم كما في الحوالة" />
+                      </div>
+                   </div>
+                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+                      <div style={formGroup}>
+                         <label style={formLabel}>UETR</label>
+                         <input name="uetr" defaultValue={selectedTransaction?.uetr || ''} style={formInput} placeholder="كود تتبع الحوالة" />
+                      </div>
+                      <div style={formGroup}>
+                         <label style={formLabel}>IBAN</label>
+                         <input name="iban" defaultValue={selectedTransaction?.iban || ''} style={formInput} placeholder="رقم الايبان" />
+                      </div>
+                      <div style={formGroup}>
+                         <label style={formLabel}>كود التحويل</label>
+                         <input name="transferCode" defaultValue={selectedTransaction?.transferCode || ''} style={formInput} placeholder="كود السداد" />
+                      </div>
+                   </div>
+                </div>
+
                 <div style={formGroup}>
                   <label style={formLabel}>سند الإيداع / المرفق</label>
                   <input name="attachment" type="file" style={{ ...formInput, padding: '0.6rem' }} />

@@ -113,6 +113,11 @@ model Transaction {
   date          DateTime
   purpose       String    // Reservation, Installment, Fees, Contribution
   attachmentUrl String?   // رابط سند الإيداع أو الإيصال
+  bankName      String?   // اسم البنك
+  accountHolder String?   // اسم صاحب الحساب
+  uetr          String?   // UETR
+  iban          String?   // IBAN
+  transferCode  String?   // كود التحويل
   sharedExpense Boolean   @default(false)
   egpRate       Float?    // سعر صرف الجنيه وقت التحويل (اختياري)
   createdAt     DateTime  @default(now())

@@ -78,6 +78,14 @@ export default function ReportsHub() {
           />
 
           <ReportCard 
+            title="كشف الحوالات البنكية" 
+            desc="تقرير بنكي مفصل يشمل أرقام الحوالات (UETR)، أسماء البنوك، وأرقام الايبان لكافة العمليات."
+            icon={<FileText size={32} color="#0369a1" />}
+            href="/dashboard/reports/transfers"
+            color="#f0f9ff"
+          />
+
+          <ReportCard 
             title="كشف حساب المستثمرين" 
             desc="تقرير تفصيلي شامل لحساب كل مستثمر على مستوى كل المشاريع أو مشروع محدد، مع عرض المدفوع والمتبقي بكل العملات."
             icon={<BookUser size={32} color="#064e3b" />}

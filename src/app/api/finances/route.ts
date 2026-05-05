@@ -29,6 +29,11 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
     const targetUserId = formData.get('userId') as string | null;
     const egpRate = formData.get('egpRate') as string;
     const file = formData.get('attachment') as File;
+    const bankName = formData.get('bankName') as string;
+    const accountHolder = formData.get('accountHolder') as string;
+    const uetr = formData.get('uetr') as string;
+    const iban = formData.get('iban') as string;
+    const transferCode = formData.get('transferCode') as string;
 
     if (isPatch && !id) return NextResponse.json({ error: 'المعرف مفقود' }, { status: 400 });
     if (!isPatch && (!amount || isNaN(parseFloat(amount)))) {
@@ -63,6 +68,11 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
       if (egpRate) updateData.egpRate = parseFloat(egpRate);
       if (attachmentUrl) updateData.attachmentUrl = attachmentUrl;
       if (targetUserId) updateData.userId = targetUserId;
+      if (bankName) updateData.bankName = bankName;
+      if (accountHolder) updateData.accountHolder = accountHolder;
+      if (uetr) updateData.uetr = uetr;
+      if (iban) updateData.iban = iban;
+      if (transferCode) updateData.transferCode = transferCode;
 
       const transaction = await prisma.transaction.update({
         where: { id },
@@ -110,7 +120,12 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
           egpRate: egpRate ? parseFloat(egpRate) : null,
           date: new Date(date),
           purpose: purpose || 'بدون بيان',
-          attachmentUrl: attachmentUrl || null
+          attachmentUrl: attachmentUrl || null,
+          bankName,
+          accountHolder,
+          uetr,
+          iban,
+          transferCode
         }
       });
 
