@@ -583,30 +583,30 @@ export default function ProjectDetailsPage() {
                   <input name="purpose" required defaultValue={selectedTransaction?.purpose || ''} style={formInput} placeholder="مثال: القسط الأول - الحجز الرسمي" />
                 </div>
 
-                <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                   <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#475569', marginBottom: '0.5rem' }}>تفاصيل التحويل البنكي (اختياري)</h4>
-                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+                <div style={{ background: '#f1f5f9', padding: '1rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                   <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569', marginBottom: '0.2rem' }}>تفاصيل التحويل البنكي (اختياري)</h4>
+                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
                       <div style={formGroup}>
-                         <label style={formLabel}>اسم البنك</label>
-                         <input name="bankName" defaultValue={selectedTransaction?.bankName || ''} style={formInput} placeholder="مثال: بنك الراجحي" />
+                         <label style={{...formLabel, fontSize: '0.8rem'}}>اسم البنك</label>
+                         <input name="bankName" defaultValue={selectedTransaction?.bankName || ''} style={{...formInput, padding: '0.7rem'}} placeholder="مثال: بنك الراجحي" />
                       </div>
                       <div style={formGroup}>
-                         <label style={formLabel}>اسم صاحب الحساب</label>
-                         <input name="accountHolder" defaultValue={selectedTransaction?.accountHolder || ''} style={formInput} placeholder="الاسم كما في الحوالة" />
+                         <label style={{...formLabel, fontSize: '0.8rem'}}>صاحب الحساب</label>
+                         <input name="accountHolder" defaultValue={selectedTransaction?.accountHolder || ''} style={{...formInput, padding: '0.7rem'}} placeholder="الاسم بالحوالة" />
                       </div>
                    </div>
-                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.8rem' }}>
                       <div style={formGroup}>
-                         <label style={formLabel}>UETR</label>
-                         <input name="uetr" defaultValue={selectedTransaction?.uetr || ''} style={formInput} placeholder="كود تتبع الحوالة" />
+                         <label style={{...formLabel, fontSize: '0.8rem'}}>UETR</label>
+                         <input name="uetr" defaultValue={selectedTransaction?.uetr || ''} style={{...formInput, padding: '0.7rem'}} placeholder="كود التتبع" />
                       </div>
                       <div style={formGroup}>
-                         <label style={formLabel}>IBAN</label>
-                         <input name="iban" defaultValue={selectedTransaction?.iban || ''} style={formInput} placeholder="رقم الايبان" />
+                         <label style={{...formLabel, fontSize: '0.8rem'}}>IBAN</label>
+                         <input name="iban" defaultValue={selectedTransaction?.iban || ''} style={{...formInput, padding: '0.7rem'}} placeholder="رقم الايبان" />
                       </div>
                       <div style={formGroup}>
-                         <label style={formLabel}>كود التحويل</label>
-                         <input name="transferCode" defaultValue={selectedTransaction?.transferCode || ''} style={formInput} placeholder="كود السداد" />
+                         <label style={{...formLabel, fontSize: '0.8rem'}}>كود التحويل</label>
+                         <input name="transferCode" defaultValue={selectedTransaction?.transferCode || ''} style={{...formInput, padding: '0.7rem'}} placeholder="كود السداد" />
                       </div>
                    </div>
                 </div>
@@ -1312,11 +1312,13 @@ const modalOverlay: any = {
 
 const modalCard: any = {
   width: '95%',
-  padding: '3rem',
-  borderRadius: '40px',
+  padding: '2rem',
+  borderRadius: '32px',
   background: 'white',
   position: 'relative',
   boxShadow: '0 50px 100px rgba(0,0,0,0.4)',
+  maxHeight: '90vh',
+  overflowY: 'auto'
 };
 
 const closeButton: any = {
