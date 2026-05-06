@@ -34,6 +34,8 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
     const uetr = formData.get('uetr') as string;
     const iban = formData.get('iban') as string;
     const transferCode = formData.get('transferCode') as string;
+    const arrivalDate = formData.get('arrivalDate') as string;
+    const arrivalTime = formData.get('arrivalTime') as string;
 
     if (isPatch && !id) return NextResponse.json({ error: 'المعرف مفقود' }, { status: 400 });
     if (!isPatch && (!amount || isNaN(parseFloat(amount)))) {
@@ -73,6 +75,8 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
       if (uetr) updateData.uetr = uetr;
       if (iban) updateData.iban = iban;
       if (transferCode) updateData.transferCode = transferCode;
+      if (arrivalDate) updateData.arrivalDate = new Date(arrivalDate);
+      if (arrivalTime) updateData.arrivalTime = arrivalTime;
 
       const transaction = await prisma.transaction.update({
         where: { id },
@@ -125,7 +129,9 @@ async function handleFinanceRequest(req: NextRequest, isPatch = false) {
           accountHolder,
           uetr,
           iban,
-          transferCode
+          transferCode,
+          arrivalDate: arrivalDate ? new Date(arrivalDate) : null,
+          arrivalTime: arrivalTime || null
         }
       });
 
