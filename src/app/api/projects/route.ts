@@ -125,6 +125,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' }
     });
 
+    console.log(`[API] Projects found in DB: ${projects.length}`);
     return NextResponse.json(projects);
   } catch (error: any) {
     console.error('Fetch Projects Error:', error);
