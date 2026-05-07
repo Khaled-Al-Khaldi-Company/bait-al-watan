@@ -122,6 +122,8 @@ model Transaction {
   transferCode  String?   // كود التحويل
   sharedExpense Boolean   @default(false)
   egpRate       Float?    // سعر صرف الجنيه وقت التحويل (اختياري)
+  arrivalDate   DateTime? // تاريخ وصول الحوالة فعلياً
+  arrivalTime   String?   // وقت وصول الحوالة
   createdAt     DateTime  @default(now())
 
   project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
