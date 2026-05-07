@@ -454,7 +454,7 @@ export default function ProjectDetailsPage() {
           <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={<Layers size={18} />} label="نظرة عامة" />
           <TabButton active={activeTab === 'partners'} onClick={() => setActiveTab('partners')} icon={<Users size={18} />} label="حصص الشركاء" />
           <TabButton active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')} icon={<Activity size={18} />} label="المسار الزمني" />
-          <TabButton active={activeTab === 'transfers'} onClick={() => setActiveTab('transfers')} icon={<Send size={18} />} label="تتبع الحوالات" />
+          <TabButton active={activeTab === 'transfers'} onClick={() => setActiveTab('transfers')} icon={<Send size={18} />} label="مركز التتبع العالمي" />
           <TabButton active={activeTab === 'finances'} onClick={() => setActiveTab('finances')} icon={<History size={18} />} label="الحركة المالية" />
           <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<FileText size={18} />} label="المستندات" />
           <TabButton active={activeTab === 'messages'} onClick={() => setActiveTab('messages')} icon={<MessageSquare size={18} />} label="المحادثات" />
@@ -831,7 +831,7 @@ function OverviewTab({ project, progress }: any) {
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr', gap: '2rem' }}>
         <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#0f172a' }}>البيانات الفنية (محدثة)</h3>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#0f172a' }}>البيانات الفنية</h3>
             <div style={{ padding: '0.6rem 1.2rem', borderRadius: '12px', background: '#f8fafc', border: '1px solid #f1f5f9', fontWeight: 800, color: '#064e3b', fontSize: '0.9rem' }}>
               كود الحجز: {project.reservationCode || "-"}
             </div>
