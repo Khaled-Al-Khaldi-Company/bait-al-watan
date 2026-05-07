@@ -454,7 +454,7 @@ export default function ProjectDetailsPage() {
           <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={<Layers size={18} />} label="نظرة عامة" />
           <TabButton active={activeTab === 'partners'} onClick={() => setActiveTab('partners')} icon={<Users size={18} />} label="حصص الشركاء" />
           <TabButton active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')} icon={<Activity size={18} />} label="المسار الزمني" />
-          <TabButton active={activeTab === 'transfers'} onClick={() => setActiveTab('transfers')} icon={<Send size={18} />} label="مركز التتبع العالمي" />
+          <TabButton active={activeTab === 'transfers'} onClick={() => setActiveTab('transfers')} icon={<Send size={18} />} label="✅ مركز التتبع الجديد" />
           <TabButton active={activeTab === 'finances'} onClick={() => setActiveTab('finances')} icon={<History size={18} />} label="الحركة المالية" />
           <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<FileText size={18} />} label="المستندات" />
           <TabButton active={activeTab === 'messages'} onClick={() => setActiveTab('messages')} icon={<MessageSquare size={18} />} label="المحادثات" />
