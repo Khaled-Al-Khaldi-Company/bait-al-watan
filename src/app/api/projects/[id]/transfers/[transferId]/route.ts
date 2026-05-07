@@ -29,6 +29,13 @@ export async function PUT(
     }
 
     const updateData: any = {
+      transferType: body.transferType || transfer.transferType,
+      fromAccount: body.fromAccount || transfer.fromAccount,
+      toAccountName: body.toAccountName || transfer.toAccountName,
+      toAccountNumber: body.toAccountNumber || transfer.toAccountNumber,
+      transferAmount: body.transferAmount ? Number(body.transferAmount) : transfer.transferAmount,
+      transferCurrency: body.transferCurrency || transfer.transferCurrency,
+      initiationDate: body.initiationDate ? new Date(body.initiationDate) : transfer.initiationDate,
       referenceNumber: body.referenceNumber !== undefined ? body.referenceNumber : transfer.referenceNumber,
       arrivalDate: body.arrivalDate ? new Date(body.arrivalDate) : transfer.arrivalDate,
       receivedAmount: body.receivedAmount ? Number(body.receivedAmount) : transfer.receivedAmount,

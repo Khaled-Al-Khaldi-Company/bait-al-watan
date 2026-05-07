@@ -38,7 +38,7 @@ export async function POST(
           projectId: id,
           userId: (session.user as any).id,
           type: 'AUTHORITY_PAYMENT',
-          amount: transfer.transferAmount, // المبلغ الإجمالي المدفوع
+          amount: -Math.abs(transfer.transferAmount), // المبلغ الإجمالي المدفوع (سالب لأنه صرف)
           officialAmount: transfer.receivedAmount, // المبلغ المعترف به من الهيئة
           date: transfer.arrivalDate, // تاريخ الاعتماد هو تاريخ الوصول
           purpose: transfer.reason || 'حوالة دولية (سويفت)',
