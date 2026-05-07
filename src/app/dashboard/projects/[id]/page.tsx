@@ -831,7 +831,7 @@ function OverviewTab({ project, progress }: any) {
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr', gap: '2rem' }}>
         <Card style={{ padding: '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0', background: 'white' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#0f172a' }}>البيانات الفنية</h3>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#0f172a' }}>البيانات الفنية (محدثة)</h3>
             <div style={{ padding: '0.6rem 1.2rem', borderRadius: '12px', background: '#f8fafc', border: '1px solid #f1f5f9', fontWeight: 800, color: '#064e3b', fontSize: '0.9rem' }}>
               كود الحجز: {project.reservationCode || "-"}
             </div>
